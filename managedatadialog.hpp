@@ -26,8 +26,6 @@
 #include <QtNetwork/QtNetwork>
 
 #include "managedata.hpp"
-#include "song.hpp"
-#include "addsongbookdialog.hpp"
 #include "bibleinformationdialog.hpp"
 #include "theme.hpp"
 #include "moduledownloaddialog.hpp"
@@ -57,8 +55,7 @@ public:
     bool reloadThemes;
 
 public slots:
-    void load_songbooks();
-    void loadThemes();
+
     void setDataDir(QDir &d){dataDir = d;}
 
 protected:
@@ -70,10 +67,8 @@ signals:
 
 private:
     QList<Bibles> bible_list;
-    QList<Songbook> songbook_list;
     QList<ThemeInfo> themeList;
     BiblesModel *bible_model;
-    SongbooksModel *songbook_model;
     ThemeModel *themeModel;
     QNetworkAccessManager downManager;
     QNetworkReply *modDownload;
@@ -94,47 +89,24 @@ private slots:
     QString getVerseId(QString book, QString chapter, QString verse);
     void setWaitCursor();
     void setArrowCursor();
-    void on_songbookTableView_clicked(QModelIndex index);
     void on_bibleTableView_clicked(QModelIndex index);
     void updateBibleButtons();
-    void updateSongbookButtons();
-    void updateThemeButtons();
+
     void on_edit_bible_pushButton_clicked();
-    void on_edit_songbook_pushButton_clicked();
     void on_delete_bible_pushButton_clicked();
     void on_export_bible_pushButton_clicked();
     void on_import_bible_pushButton_clicked();
     void on_ok_pushButton_clicked();
-    void on_delete_songbook_pushButton_clicked();
-    void on_export_songbook_pushButton_clicked();
-    void on_import_songbook_pushButton_clicked();
     void deleteBible(Bibles bilbe);
     void importBible(QString path);
     void exportBible(QString path, Bibles bible);
-    void deleteSongbook(Songbook songbook);
-    void importSongbook(QString path);
-    void exportSongbook(QString path);
     void load_bibles();
     void toMultiLine(QString& mline);
     void toSingleLine(QString& sline);
-    void on_pushButtonThemeNew_clicked();
-    void on_pushButtonThemeImport_clicked();
-    void on_pushButtonThemeEdit_clicked();
-    void on_pushButtonThemeExport_clicked();
-    void on_pushButtonThemeDelete_clicked();
-    void on_TableViewTheme_clicked(const QModelIndex &index);
-    void deleteTheme(ThemeInfo tme);
-    void on_pushButtonThemeExportAll_clicked();
-    void exportTheme(QString path, bool all);
-    void transferTheme(QSqlQuery &sqf,QSqlQuery &sqt);
-    void transferThemeAnnounce(QSqlQuery &sqf,QSqlQuery &sqt,int tmId);
-    void transferThemeBible(QSqlQuery &sqf,QSqlQuery &sqt,int tmId);
-    void transferThemePassive(QSqlQuery &sqf,QSqlQuery &sqt,int tmId);
-    void transferThemeSong(QSqlQuery &sqf,QSqlQuery &sqt,int tmId);
-    void importTheme(QString path);
+
+
     void on_pushButtonDownBible_clicked();
-    void on_pushButtonDownSong_clicked();
-    void on_pushButtonDownTheme_clicked();
+
 
     void downloadModList(QUrl url);
     void downloadNextMod();
@@ -146,7 +118,7 @@ private slots:
     QStringList getModList(QString filepath);
     void importNextModule();
     void importModules();
-    QString cleanSongLines(QString songText);
+
 };
 
 #endif // MANAGEDATADIALOG_HPP

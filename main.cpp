@@ -20,7 +20,7 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QtSql>
-#include "softprojector.hpp"
+#include "softbiblestudy.hpp"
 
 // Definitions for database versions 'dbVer' numbers
 // x - Official release. ex: 2 - for SoftProjector 2
@@ -107,7 +107,7 @@ bool connect(QString database_file)
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    a.setApplicationName("SoftProjector");
+    a.setApplicationName("SoftBibleStudy");
 
     QPixmap pixmap(":icons/icons/splash.png");
     QSplashScreen splash(pixmap);
@@ -232,7 +232,7 @@ int main(int argc, char *argv[])
     }
     // Database is of correct version
 
-    SoftProjector w;
+    SoftBibleStudy w;
     w.setAppDataDir(QDir(database_dir));
     w.show();
     splash.finish(&w);

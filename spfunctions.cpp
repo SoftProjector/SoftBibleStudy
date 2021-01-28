@@ -22,6 +22,14 @@
 //{
 //}
 
+QString clean(QString str)
+{
+    //Removes all none alphanumeric characters from the string
+    str.replace(QRegExp("[\\W*]")," ");
+    str = str.simplified();
+    return str;
+}
+
 QByteArray pixToByte(const QPixmap & pmap)
 {
     QByteArray bytes;

@@ -26,7 +26,7 @@ AboutDialog::AboutDialog(QWidget *parent, QString version_string) :
     ui(new Ui::AboutDialog)
 {
     ui->setupUi(this);
-    softProjector = (SoftProjector*)parent;
+    softProjector = (SoftBibleStudy*)parent;
     ui->version_label->setText(version_string);
 }
 

@@ -22,7 +22,6 @@
 
 #include <QtWidgets>
 #include "settings.hpp"
-#include "addsongbookdialog.hpp"
 #include "theme.hpp"
 
 namespace Ui {

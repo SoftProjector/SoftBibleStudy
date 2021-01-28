@@ -29,16 +29,11 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     generalSettingswidget = new GeneralSettingWidget;
     passiveSettingwidget = new PassiveSettingWidget;
     bibleSettingswidget = new BibleSettingWidget;
-    songSettingswidget = new SongSettingWidget;
-    pictureSettingWidget = new PictureSettingWidget;
-    announcementSettingswidget = new AnnouncementSettingWidget;
 
     ui->scrollAreaGeneralSettings->setWidget(generalSettingswidget);
     ui->scrollAreaPassiveSettings->setWidget(passiveSettingwidget);
     ui->scrollAreaBibleSettings->setWidget(bibleSettingswidget);
-    ui->scrollAreaSongSettings->setWidget(songSettingswidget);
-    ui->scrollAreaPicture->setWidget(pictureSettingWidget);
-    ui->scrollAreaAnnouncementSettings->setWidget(announcementSettingswidget);
+
 
     btnOk = new QPushButton(tr("OK"));
     btnCancel = new QPushButton(tr("Cancel"));
@@ -54,8 +49,6 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 
     // Connect Apply to all
     connect(bibleSettingswidget,SIGNAL(applyBackToAll(int,QString,QPixmap)),this,SLOT(applyToAllActive(int,QString,QPixmap)));
-    connect(songSettingswidget,SIGNAL(applyBackToAll(int,QString,QPixmap)),this,SLOT(applyToAllActive(int,QString,QPixmap)));
-    connect(announcementSettingswidget,SIGNAL(applyBackToAll(int,QString,QPixmap)),this,SLOT(applyToAllActive(int,QString,QPixmap)));
 
 }
 
@@ -76,7 +69,6 @@ void SettingsDialog::loadSettings(GeneralSettings &sets, Theme &thm, SlideShowSe
     // Set individual items
     generalSettingswidget->setSettings(gsettings);
     bibleSettingswidget->setBibleVersions(bsettings,bsettings2);
-    pictureSettingWidget->setSettings(ssettings);
     setThemes();
 }
 
@@ -87,8 +79,6 @@ SettingsDialog::~SettingsDialog()
     delete generalSettingswidget;
     delete passiveSettingwidget;
     delete bibleSettingswidget;
-    delete songSettingswidget;
-    delete announcementSettingswidget;
 
     delete btnOk;
     delete btnCancel;
@@ -116,8 +106,6 @@ void SettingsDialog::setUseDispScreen2(bool toUse)
 {
     passiveSettingwidget->setDispScreen2Visible(toUse);
     bibleSettingswidget->setDispScreen2Visible(toUse);
-    songSettingswidget->setDispScreen2Visible(toUse);
-    announcementSettingswidget->setDispScreen2Visible(toUse);
 }
 
 void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
@@ -137,7 +125,6 @@ void SettingsDialog::applySettings()
 {
     gsettings = generalSettingswidget->getSettings();
     bibleSettingswidget->getBibleVersions(bsettings,bsettings2);
-    pictureSettingWidget->getSettings(ssettings);
     getThemes();
 
     // Apply settings
@@ -167,16 +154,12 @@ void SettingsDialog::getThemes()
 {
     passiveSettingwidget->getSettings(theme.passive, theme.passive2);
     bibleSettingswidget->getSettings(theme.bible, theme.bible2);
-    songSettingswidget->getSettings(theme.song, theme.song2);
-    announcementSettingswidget->getSettings(theme.announce, theme.announce2);
 }
 
 void SettingsDialog::setThemes()
 {
     passiveSettingwidget->setSetings(theme.passive, theme.passive2);
     bibleSettingswidget->setSettings(theme.bible, theme.bible2);
-    songSettingswidget->setSettings(theme.song, theme.song2);
-    announcementSettingswidget->setSettings(theme.announce, theme.announce2);
 }
 
 void SettingsDialog::changeTheme(int theme_id)
@@ -196,20 +179,14 @@ void SettingsDialog::applyToAllActive(int t, QString backName, QPixmap backgroun
     switch (t)
     {
     case 1:
-        songSettingswidget->setBackgroungds(backName,background);
-        announcementSettingswidget->setBackgroungds(backName,background);
         break;
     case 2:
         bibleSettingswidget->setBackgroungds(backName,background);
-        announcementSettingswidget->setBackgroungds(backName,background);
         break;
     case 3:
         bibleSettingswidget->setBackgroungds(backName,background);
-        songSettingswidget->setBackgroungds(backName,background);
         break;
     default:
         bibleSettingswidget->setBackgroungds(backName,background);
-        songSettingswidget->setBackgroungds(backName,background);
-        announcementSettingswidget->setBackgroungds(backName,background);
     }
 }

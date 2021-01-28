@@ -500,29 +500,6 @@ Results</string>
             </spacer>
            </item>
            <item>
-            <widget class="QPushButton" name="btnLive">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="toolTip">
-              <string>Quickly display the selected Bible verse on the screen</string>
-             </property>
-             <property name="text">
-              <string>Go Live (F5)</string>
-             </property>
-             <property name="icon">
-              <iconset resource="softprojector.qrc">
-               <normaloff>:/icons/icons/go_live.png</normaloff>:/icons/icons/go_live.png</iconset>
-             </property>
-             <property name="shortcut">
-              <string>F5</string>
-             </property>
-            </widget>
-           </item>
-           <item>
             <layout class="QVBoxLayout" name="verticalLayout_5">
              <property name="spacing">
               <number>0</number>
@@ -548,20 +525,6 @@ Results</string>
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="layoutWidget2">
-      <layout class="QGridLayout" name="gridLayout">
-       <property name="sizeConstraint">
-        <enum>QLayout::SetMinimumSize</enum>
-       </property>
-       <item row="0" column="0" rowspan="2">
-        <widget class="QListWidget" name="history_listWidget">
-         <property name="toolTip">
-          <string>This list contains verses that were sent to be shown</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
     </widget>
    </item>
   </layout>
@@ -573,14 +536,12 @@ Results</string>
   <tabstop>listBook</tabstop>
   <tabstop>listChapterNum</tabstop>
   <tabstop>chapter_preview_list</tabstop>
-  <tabstop>btnLive</tabstop>
   <tabstop>search_ef</tabstop>
   <tabstop>comboBoxSearchRange</tabstop>
   <tabstop>comboBoxSearchType</tabstop>
   <tabstop>search_button</tabstop>
   <tabstop>search_results_list</tabstop>
   <tabstop>hide_result_button</tabstop>
-  <tabstop>history_listWidget</tabstop>
  </tabstops>
  <resources>
   <include location="softprojector.qrc"/>

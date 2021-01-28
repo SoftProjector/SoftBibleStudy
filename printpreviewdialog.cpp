@@ -62,34 +62,6 @@ void PrintPreviewDialog::on_spinBoxFontSize_valueChanged(int arg1)
     ui->textEdit->setFont(font);
 }
 
-void PrintPreviewDialog::setText(Song song)
-// This will prepare print text edit for current song
-{
-    QString s;
-    s = QString("%1 %2\n%3\n").arg(song.songbook_name).arg(song.number).arg(song.title);
-    // Do not print Tune, WordsBy, and MusicBy if they are empty
-    if(!song.tune.isEmpty())
-        s+= tr("Tune: %1\n").arg(song.tune);
-    if(!song.wordsBy.isEmpty() && !song.musicBy.isEmpty())
-        s+= tr("Words By: %1\tMusic By: %2\n\n").arg(song.wordsBy).arg(song.musicBy);
-    else if(!song.wordsBy.isEmpty() && song.musicBy.isEmpty())
-        s+= tr("Words By: %1\n\n").arg(song.wordsBy);
-    else if(song.wordsBy.isEmpty() && !song.musicBy.isEmpty())
-        s+= tr("Music By: %1\n\n").arg(song.musicBy);
-    else
-        s+= "\n";
-//    song.songText=song.songText.split("@$").join("\n\n");
-//    song.songText=song.songText.split("@%").join("\n");
-    s += song.songText;
-
-    //Check for notes
-    if(!song.notes.isEmpty())
-        s += tr("\n\nNotes:\n%1").arg(song.notes);
-
-    ui->textEdit->setText(s);
-    ui->spinBoxFontSize->setValue(14);// default font size for Songs
-}
-
 void PrintPreviewDialog::setText(QString bible, QString book, int chapter)
 // This will prepare print text edit for Current chapter
 {
@@ -125,45 +97,6 @@ void PrintPreviewDialog::setText(QString bible, QString book, int chapter)
 
     ui->textEdit->setText(s);
     ui->spinBoxFontSize->setValue(11);// default font size for Bible chapter
-}
-
-void PrintPreviewDialog::setText(Announcement announce)
-{
-    QString s;
-    s = tr("Announcements: %1\n\n").arg(announce.title);
-    s += announce.text;
-
-    ui->textEdit->setText(s);
-    ui->spinBoxFontSize->setValue(14);// default font size for Announcements
-}
-
-void PrintPreviewDialog::setSchedule(QString scheduleName, const QList<Schedule> &schedule, bool printDetail)
-{
-    QFileInfo fi(scheduleName);
-    scheduleName = fi.fileName();
-    scheduleName.remove(".spsc");
-    QString s;
-
-    // start
-    if(scheduleName.isEmpty())
-        s = "";
-    else
-        s = tr("SoftProject Schedule: ") + scheduleName + "\n\n";
-
-    if(printDetail)
-    {
-
-    }
-    else
-    {
-        foreach(const Schedule &si,schedule)
-        {
-            s += QString("%1: %2\n").arg(si.stype).arg(si.name);
-        }
-    }
-
-    ui->textEdit->setText(s);
-    ui->spinBoxFontSize->setValue(11); // default font size for spftProjector Schedule
 }
 
 void PrintPreviewDialog::on_pushButtonPDF_clicked()

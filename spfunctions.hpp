@@ -26,7 +26,7 @@
 #include <QPixmap>
 #include <QBuffer>
 
-
+QString clean(QString str);
 QByteArray pixToByte(const QPixmap & pmap);
 bool isAnnounceTitle(QString string);
 QString getSupportedImageFormats();

@@ -189,29 +189,29 @@ void GeneralSettingWidget::on_pushButtonAddTheme_clicked()
     ThemeInfo tmi;
     int nId;
 
-    AddSongbookDialog theme_dia;
-    theme_dia.setWindowTitle(tr("Edit Theme"));
-    theme_dia.setWindowText(tr("Theme Name:"),tr("Comments:"));
-    theme_dia.setSongbook(tr("Default"),tr("This theme will contain program default settings."));
-    int ret = theme_dia.exec();
-    switch(ret)
-    {
-    case AddSongbookDialog::Accepted:
-        tmi.name = theme_dia.title;
-        tmi.comments = theme_dia.info;
-        tm.setThemeInfo(tmi);
-        tm.saveThemeNew();
-        nId = tm.getThemeId();
+//    AddSongbookDialog theme_dia;
+//    theme_dia.setWindowTitle(tr("Edit Theme"));
+//    theme_dia.setWindowText(tr("Theme Name:"),tr("Comments:"));
+//    theme_dia.setSongbook(tr("Default"),tr("This theme will contain program default settings."));
+//    int ret = theme_dia.exec();
+//    switch(ret)
+//    {
+//    case AddSongbookDialog::Accepted:
+//        tmi.name = theme_dia.title;
+//        tmi.comments = theme_dia.info;
+//        tm.setThemeInfo(tmi);
+//        tm.saveThemeNew();
+//        nId = tm.getThemeId();
 
-        loadThemes();
+//        loadThemes();
 
-        ui->comboBoxTheme->setCurrentIndex(themeIdList.indexOf(nId));
-        emit themeChanged(nId);
+//        ui->comboBoxTheme->setCurrentIndex(themeIdList.indexOf(nId));
+//        emit themeChanged(nId);
 
-        break;
-    case AddSongbookDialog::Rejected:
-        break;
-    }
+//        break;
+//    case AddSongbookDialog::Rejected:
+//        break;
+//    }
 }
 
 void GeneralSettingWidget::on_comboBoxTheme_activated(int index)

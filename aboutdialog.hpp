@@ -21,7 +21,7 @@
 #define ABOUTDIALOG_HPP
 
 #include <QDialog>
-#include "softprojector.hpp"
+#include "softbiblestudy.hpp"
 
 namespace Ui {
     class AboutDialog;
@@ -39,7 +39,7 @@ protected:
 
 private:
     Ui::AboutDialog *ui;
-    SoftProjector *softProjector;
+    SoftBibleStudy *softProjector;
 
 private slots:
     void on_pushButton_clicked();

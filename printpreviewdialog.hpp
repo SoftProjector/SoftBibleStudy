@@ -23,10 +23,7 @@
 #include <QtGui>
 #include <QtCore>
 #include <QtPrintSupport>
-#include "song.hpp"
 #include "bible.hpp"
-#include "announcewidget.hpp"
-#include "schedule.hpp"
 
 namespace Ui {
 class PrintPreviewDialog;
@@ -41,10 +38,7 @@ public:
     ~PrintPreviewDialog();
 
 public slots:
-    void setText(Song song);
     void setText(QString bible,QString book,int chapter);
-    void setText(Announcement announce);
-    void setSchedule(QString scheduleName, const QList<Schedule> &schedule, bool printDetail);
 
 private slots:
     void on_fontComboBox_currentFontChanged(const QFont &f);

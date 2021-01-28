@@ -19,7 +19,6 @@
 
 #include "biblewidget.hpp"
 #include "ui_biblewidget.h"
-#include "song.hpp"
 //#include <time.h>
 
 //double diffclock(clock_t clock1,clock_t clock2)
@@ -76,12 +75,6 @@ void BibleWidget::loadBibles(QString initialId)
     // if operator bible = "same", then set it to primary bible
     if(mySettings.operatorBible == "same")
         mySettings.operatorBible = mySettings.primaryBible;
-
-    // make sure that program does not drop if no bible is present
-    if(mySettings.operatorBible == "none")
-        ui->btnLive->setEnabled(false);
-    else
-        ui->btnLive->setEnabled(true);
 
     // Check if primary bible is different that what has been loaded already
     // If it is different, then reload the bible list
@@ -176,22 +169,10 @@ void BibleWidget::on_chapter_preview_list_currentRowChanged(int currentRow)
 void BibleWidget::on_chapter_preview_list_doubleClicked(QModelIndex index)
 {
     // Called when a chapter or verse is double clicked
-    sendToProjector(true);
+
 }
 
-void BibleWidget::sendToProjector(bool add_to_history)
-{
-    bible.currentIdList = bible.previewIdList;
-    QItemSelection selectedItems = ui->chapter_preview_list->selectionModel()->selection();
-    if(selectedItems.count())
-    {
-        // Get the caption string to show above the show list (right-most list)
-        QString cap = QString("%1 %2").arg(ui->listBook->currentItem()->text()).arg(ui->listChapterNum->currentItem()->text());
-        emit goLive(bible.verseList, cap,selectedItems);
-        if (add_to_history)
-            addToHistory();
-    }
-}
+
 
 void BibleWidget::on_lineEditBook_textChanged(QString text)
 {
@@ -295,11 +276,6 @@ void BibleWidget::on_lineEditBook_textChanged(QString text)
         if( verse != 0 && verse <= ui->chapter_preview_list->count() )
             ui->chapter_preview_list->setCurrentRow(verse-1);
     }
-}
-
-void BibleWidget::on_btnLive_clicked()
-{
-    sendToProjector(true);
 }
 
 void BibleWidget::on_verse_ef_textChanged(QString new_string)
@@ -436,65 +412,7 @@ void BibleWidget::on_search_results_list_currentRowChanged(int currentRow)
 void BibleWidget::on_search_results_list_doubleClicked(QModelIndex index)
 {
     on_search_results_list_currentRowChanged(index.row());
-    on_btnLive_clicked();
-}
 
-void BibleWidget::addToHistory()
-{
-    BibleHistory b = getCurrentVerse();
-    history_items.append(b);
-    ui->history_listWidget->addItem(b.captionLong);
-    // Scroll to latest history item
-    ui->history_listWidget->scrollToBottom();
-}
-
-void BibleWidget::addToHistory(BibleHistory &b)
-{
-    history_items.append(b);
-    ui->history_listWidget->addItem(b.captionLong);
-}
-
-void BibleWidget::clearHistory()
-{
-    ui->history_listWidget->clear();
-    history_items.clear();
-}
-
-void BibleWidget::on_history_listWidget_currentRowChanged(int currentRow)
-{
-    if (currentRow >= 0)
-    {
-        BibleHistory bh = history_items.at(currentRow);
-        setSelectedHistory(bh);
-    }
-}
-
-void BibleWidget::setSelectedHistory(BibleHistory &b)
-{
-    QStringList all_books = bible.getBooks();
-    if(ui->listBook->count()!=all_books.count())
-    {
-        ui->listBook->clear();
-        ui->listBook->addItems(all_books);
-    }
-    QString bk;
-    int ch,vr,vrl;
-    bible.getVerseRef(b.verseIds,bk,ch,vr);
-    vrl = bible.getVerseNumberLast(b.verseIds);
-
-    ui->listBook->setCurrentRow(all_books.indexOf(bk));
-    ui->chapter_ef->setText(QString::number(ch));
-    QItemSelection sel;
-    sel.select(ui->chapter_preview_list->model()->index(vr-1,0,QModelIndex()),
-               ui->chapter_preview_list->model()->index(vrl-1,0,QModelIndex()));
-    ui->chapter_preview_list->clearSelection();
-    ui->verse_ef->setText(QString::number(vr));
-    ui->chapter_preview_list->selectionModel()->select(sel,QItemSelectionModel::Select);
-}
-
-void BibleWidget::on_history_listWidget_doubleClicked(QModelIndex index)
-{
-    sendToProjector( false);
 }
 
 QByteArray BibleWidget::getHiddenSplitterState()
