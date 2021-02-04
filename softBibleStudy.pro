@@ -45,7 +45,6 @@ OUT_PWD = $${RES_DIR}/bin
 
 SOURCES += main.cpp \
     softbiblestudy.cpp \
-    biblewidget.cpp \
     bible.cpp \
     settingsdialog.cpp \
     aboutdialog.cpp \
@@ -69,7 +68,6 @@ SOURCES += main.cpp \
     spimageprovider.cpp
 HEADERS += \
     softbiblestudy.hpp \
-    biblewidget.hpp \
     bible.hpp \
     settingsdialog.hpp \
     aboutdialog.hpp \
@@ -93,7 +91,6 @@ HEADERS += \
     spimageprovider.hpp
 FORMS += \
     softbiblestudy.ui \
-    biblewidget.ui \
     settingsdialog.ui \
     aboutdialog.ui \
     managedatadialog.ui \

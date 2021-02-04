@@ -21,12 +21,12 @@
 #define SOFTBIBLESTUDY_H
 
 #include <QMainWindow>
-#include "biblewidget.hpp"
 #include "bible.hpp"
 #include "managedatadialog.hpp"
 #include "settingsdialog.hpp"
 #include "settings.hpp"
 #include "helpdialog.hpp"
+#include "highlight.hpp"
 
 class QActionGroup;
 
@@ -42,7 +42,6 @@ class SoftBibleStudy : public QMainWindow
 public:
     SoftBibleStudy(QWidget *parent = 0);
     ~SoftBibleStudy();
-    BibleWidget *bibleWidget;
     ManageDataDialog *manageDialog;
     QDesktopWidget *desktop;
 
@@ -54,6 +53,17 @@ public:
 
     SoftBibleStudy *softProjector;
 
+
+    Bible bible;
+    QString getCurrentBook();
+
+    // For optimization:
+    QString currentBook;
+    int currentChapter;
+    QStringList currentChapterList;
+
+    int getCurrentChapter();
+
 public slots:
     void updateSetting(GeneralSettings &g,Theme &t, SlideShowSettings &ssets,
                        BibleVersionSettings &bsets, BibleVersionSettings &bsets2);
@@ -61,6 +71,19 @@ public slots:
     void setWaitCursor();
     void setArrowCursor();
     void setAppDataDir(QDir d){appDataDir = d;}
+
+
+
+
+    QByteArray getHiddenSplitterState();
+    QByteArray getShownSplitterState();
+    void setHiddenSplitterState(QByteArray& state);
+    void setShownSplitterState(QByteArray& state);
+    void loadBibles(QString initialId);
+    BibleHistory getCurrentVerse();
+    bool isVerseSelected();
+    void setBibleBookActive();
+    void setBibleSearchActive();
 
 private:
     QDir appDataDir;
@@ -86,10 +109,19 @@ private:
     QShortcut *shSart1;
     QShortcut *shSart2;
 
+
+
+    BibleVersionSettings bibleSettings;
+    HighlighterDelegate *highlight;
+    QList<BibleSearch> search_results;
+    QList<BibleHistory> history_items;
+    QIntValidator *chapter_validator, *verse_validator;
+    QByteArray hidden_splitter_state, shown_splitter_state;
+    QButtonGroup search_type_buttongroup;
+
 private slots:
     void applySetting(GeneralSettings &g, Theme &t, SlideShowSettings &s,
                       BibleVersionSettings &b1, BibleVersionSettings &b2);
-    void on_projectTab_currentChanged(int index);
     void updateEditActions();
     void on_actionNew_triggered();
     void on_actionEdit_triggered();
@@ -102,7 +134,7 @@ private slots:
     void on_action_Help_triggered();
     void on_actionManage_Database_triggered();
     void on_actionAbout_triggered();
-    //void on_actionSettings_triggered();
+    void on_actionSettings_triggered();
     void on_actionClose_triggered();
     // void setChapterList(QStringList chapter_list, QString caption, QItemSelection selectedItems);
 
@@ -111,9 +143,27 @@ private slots:
     //void on_actionClear_triggered();
 
 
+
+
+    void on_search_results_list_doubleClicked(QModelIndex index);
+    void on_search_results_list_currentRowChanged(int currentRow);
+    void on_hide_result_button_clicked();
+    void on_search_button_clicked();
+    void on_chapter_ef_textChanged(QString new_string);
+    void on_verse_ef_textChanged(QString new_string);
+    void on_lineEditBook_textChanged(QString );
+    void on_chapter_preview_list_doubleClicked(QModelIndex index);
+    void on_chapter_preview_list_currentRowChanged(int currentRow);
+    void on_listChapterNum_currentTextChanged(QString currentText);
+    void on_listBook_currentTextChanged(QString currentText);
+
+
+
 protected:
     void closeEvent(QCloseEvent *event);
     //void keyPressEvent(QKeyEvent *event);
+
+    //virtual void changeEvent(QEvent *e);
 };
 
 #endif // SOFTBIBLESTUDY_H

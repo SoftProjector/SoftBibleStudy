@@ -42,7 +42,6 @@ SoftBibleStudy::SoftBibleStudy(QWidget *parent)
     // NOTE: With virtual desktop, desktop->screen() will always return the main screen,
     // so this will initialize the Display1 widget on the main screen:
 
-    bibleWidget = new BibleWidget;
     settingsDialog = new SettingsDialog(this);
     helpDialog = new HelpDialog();
     manageDialog = new ManageDataDialog(this);
@@ -65,15 +64,6 @@ SoftBibleStudy::SoftBibleStudy(QWidget *parent)
 
     showing = false;
 
-    ui->projectTab->clear();
-    ui->projectTab->addTab(bibleWidget,QIcon(":/icons/icons/book.png"), tr("Bible (F6)"));
-    ui->projectTab->setCurrentIndex(0);
-
-
-//    connect(bibleWidget, SIGNAL(setArrowCursor()), this, SLOT(setArrowCursor()));
-//    connect(bibleWidget, SIGNAL(setWaitCursor()), this, SLOT(setWaitCursor()));
-//    connect(manageDialog, SIGNAL(setMainArrowCursor()), this, SLOT(setArrowCursor()));
-//    connect(manageDialog, SIGNAL(setMainWaitCursor()), this, SLOT(setWaitCursor()));
     connect(languageGroup, SIGNAL(triggered(QAction*)), this, SLOT(switchLanguage(QAction*)));
 
     // Add tool bar actions
@@ -113,14 +103,24 @@ SoftBibleStudy::SoftBibleStudy(QWidget *parent)
     ui->actionClear->setEnabled(false);
 
 
-    version_string = "2.2";
+    on_hide_result_button_clicked();
+
+    chapter_validator = new QIntValidator(1, 1, ui->chapter_ef);
+    verse_validator = new QIntValidator(1, 1, ui->verse_ef);
+
+    ui->chapter_ef->setValidator( chapter_validator );
+    ui->verse_ef->setValidator( verse_validator );
+
+    highlight = new HighlighterDelegate(ui->search_results_list);
+    ui->search_results_list->setItemDelegate(highlight);
+
+    version_string = "0.0.1";
     this->setWindowTitle("SoftProjector " + version_string);
 }
 
 SoftBibleStudy::~SoftBibleStudy()
 {
     saveSettings();
-    delete bibleWidget;
     delete manageDialog;
     delete desktop;
     delete languageGroup;
@@ -130,15 +130,17 @@ SoftBibleStudy::~SoftBibleStudy()
     delete shSart1;
     delete shSart2;
     delete helpDialog;
+
+    delete chapter_validator;
+    delete verse_validator;
     delete ui;
 }
 
 void SoftBibleStudy::saveSettings()
 {
     // Save splitter states
-    mySettings.spMain.spSplitter = ui->splitter->saveState();
-    mySettings.spMain.bibleHiddenSplitter = bibleWidget->getHiddenSplitterState();
-    mySettings.spMain.bibleShowSplitter = bibleWidget->getShownSplitterState();
+    mySettings.spMain.bibleHiddenSplitter = getHiddenSplitterState();
+    mySettings.spMain.bibleShowSplitter = getShownSplitterState();
 
     // Save window maximized state
     mySettings.spMain.isWindowMaximized = this->isMaximized();
@@ -171,7 +173,9 @@ void SoftBibleStudy::updateSetting(GeneralSettings &g, Theme &t, SlideShowSettin
     mySettings.bibleSets2 = bsets2;
     mySettings.saveSettings();
     theme = t;
-    bibleWidget->setSettings(mySettings.bibleSets);
+    loadBibles(bibleSettings.operatorBible);
+    bibleSettings = mySettings.bibleSets;
+
 
     theme.bible.versions = mySettings.bibleSets;
     theme.bible2.versions = mySettings.bibleSets2;
@@ -183,9 +187,8 @@ void SoftBibleStudy::applySetting(GeneralSettings &g, Theme &t, SlideShowSetting
     updateSetting(g,t,s,b1,b2);
 
     // Apply splitter states
-    ui->splitter->restoreState(mySettings.spMain.spSplitter);
-    bibleWidget->setHiddenSplitterState(mySettings.spMain.bibleHiddenSplitter);
-    bibleWidget->setShownSplitterState(mySettings.spMain.bibleShowSplitter);
+    setHiddenSplitterState(mySettings.spMain.bibleHiddenSplitter);
+    setShownSplitterState(mySettings.spMain.bibleShowSplitter);
 
     // Apply window maximized
     if(mySettings.spMain.isWindowMaximized)
@@ -259,14 +262,9 @@ void SoftBibleStudy::on_actionClose_triggered()
 }
 
 
-void SoftBibleStudy::on_projectTab_currentChanged(int index)
-{
-    updateEditActions();
-}
-
 void SoftBibleStudy::updateEditActions()
 {
-    int ctab = ui->projectTab->currentIndex();
+    int ctab = 0;
     // ctab - 0=bible, 1=songs, 2=pix, 3=media, 4=annouce
     if(ctab == 0)
     {
@@ -385,7 +383,7 @@ void SoftBibleStudy::on_actionManage_Database_triggered()
         sq.exec("SELECT * FROM BibleVersions WHERE id = " + mySettings.bibleSets.operatorBible);
         if (!sq.first())
             mySettings.bibleSets.operatorBible = "same";
-        bibleWidget->setSettings(mySettings.bibleSets);
+        bibleSettings = mySettings.bibleSets;
     }
 }
 
@@ -395,6 +393,12 @@ void SoftBibleStudy::on_actionAbout_triggered()
     aboutDialog = new AboutDialog(this, version_string);
     aboutDialog->exec();
     delete aboutDialog;
+}
+
+void SoftBibleStudy::on_actionSettings_triggered()
+{
+    settingsDialog->loadSettings(mySettings.general,theme,mySettings.slideSets, mySettings.bibleSets,mySettings.bibleSets2);
+    settingsDialog->exec();
 }
 
 void SoftBibleStudy::on_action_Help_triggered()
@@ -480,11 +484,6 @@ void SoftBibleStudy::retranslateUis()
     }
 
     ui->retranslateUi(this);
-    ui->projectTab->setTabText(0, tr("Bible (F6)"));
-    ui->projectTab->setTabText(1, tr("Songs (F7)"));
-    ui->projectTab->setTabText(2, tr("Pictures"));
-//    ui->projectTab->setTabText(3, tr("Media"));
-    ui->projectTab->setTabText(3, tr("Announcements (F8)"));
     updateEditActions();
 }
 
@@ -492,35 +491,460 @@ void SoftBibleStudy::on_actionPrint_triggered()
 {
     PrintPreviewDialog* p;
     p = new PrintPreviewDialog(this);
-    if(ui->projectTab->currentIndex() == 0)
-    {
+
         p->setText(mySettings.bibleSets.operatorBible + "," + mySettings.bibleSets.primaryBible,
-                   bibleWidget->getCurrentBook(),bibleWidget->getCurrentChapter());
+                   getCurrentBook(),getCurrentChapter());
         p->exec();
-    }
-    else if (ui->projectTab->currentIndex() == 1)
-    {
 
-        {
-            QMessageBox ms(this);
-            ms.setWindowTitle(tr("No song selected"));
-            ms.setText(tr("No song has been selected to be printed."));
-            ms.setInformativeText(tr("Please select a song to be printed."));
-            ms.setIcon(QMessageBox::Information);
-            ms.exec();
-        }
-    }
-    else if (ui->projectTab->currentIndex() == 4)
-    {
-
-        {
-            QMessageBox ms(this);
-            ms.setWindowTitle(tr("No announcement selected"));
-            ms.setText(tr("No announcement has been selected to be printed."));
-            ms.setInformativeText(tr("Please select a announcement to be printed."));
-            ms.setIcon(QMessageBox::Information);
-            ms.exec();
-        }
-    }
     delete p;
 }
+
+
+/**************************************************************/
+
+//void SoftBibleStudy::changeEvent(QEvent *e)
+//{
+//    QWidget::changeEvent(e);
+//    switch (e->type()) {
+//    case QEvent::LanguageChange:
+//        ui->retranslateUi(this);
+//        break;
+//    default:
+//        break;
+//    }
+//}
+
+void SoftBibleStudy::loadBibles(QString initialId)
+{
+    // if operator bible = "same", then set it to primary bible
+    if(bibleSettings.operatorBible == "same")
+        bibleSettings.operatorBible = bibleSettings.primaryBible;
+
+    // Check if primary bible is different that what has been loaded already
+    // If it is different, then reload the bible list
+    if(initialId!=bibleSettings.operatorBible)
+    {
+        bible.setBiblesId(bibleSettings.operatorBible);
+        bible.loadOperatorBible();
+        ui->listBook->clear();
+        ui->listBook->addItems(bible.getBooks());
+        ui->listBook->setCurrentRow(0);
+    }
+}
+
+void SoftBibleStudy::on_listBook_currentTextChanged(QString currentText)
+{
+    int s = ui->listBook->currentRow();
+    if( s != -1 )
+    {
+        int max_chapter = bible.books.at(bible.getCurrentBookRow(currentText)).chapterCount;
+        ui->listChapterNum->clear();
+        for(int i=0; i<max_chapter; ++i)
+            ui->listChapterNum->addItem(QString::number(i+1));
+        chapter_validator->setTop(max_chapter);
+        if( ui->listChapterNum->currentRow() != 0 )
+            ui->listChapterNum->setCurrentRow(0);
+    }
+    else
+    {
+        // No bible book selected
+        chapter_validator->setTop(1);
+        ui->listChapterNum->clear();
+    }
+}
+
+void SoftBibleStudy::on_listChapterNum_currentTextChanged(QString currentText)
+{
+    int s = ui->listChapterNum->currentRow();
+    if( s != -1 )
+    {
+        // This optimization is required in order for the bible filter entry field to work fast:
+        if( currentBook != getCurrentBook() || currentChapter != currentText.toInt() )
+        {
+            currentBook = getCurrentBook();
+            currentChapter = currentText.toInt();
+            currentChapterList = bible.getChapter(bible.books.at(bible.getCurrentBookRow(currentBook)).bookId.toInt(), currentChapter);
+        }
+
+        ui->chapter_preview_list->clear();
+        ui->chapter_preview_list->addItems(currentChapterList);
+        ui->chapter_ef->setText(currentText);
+        verse_validator->setTop(ui->chapter_preview_list->count());
+        ui->chapter_preview_list->setCurrentRow(0);
+    }
+    else
+    {
+        ui->chapter_preview_list->clear();
+    }
+}
+
+QString SoftBibleStudy::getCurrentBook()
+{
+    return ui->listBook->currentItem()->text();
+}
+
+int SoftBibleStudy::getCurrentChapter()
+{
+    return ui->listChapterNum->currentItem()->text().toInt();
+}
+
+/*
+bool SoftBibleStudy::eventFilter(QObject *object, QEvent *event)
+{
+    if (object == ui->spinVerse && event->type() == QEvent::KeyPress)
+    {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        if (keyEvent->key() == Qt::KeyDown) {
+            qDebug() << "DOWN KEY";
+            // Special tab handling
+            return true;
+        } else
+            return false;
+    }
+    return false;
+}
+*/
+
+void SoftBibleStudy::on_chapter_preview_list_currentRowChanged(int currentRow)
+{
+    ui->verse_ef->setText(QString::number(currentRow+1));
+}
+
+void SoftBibleStudy::on_chapter_preview_list_doubleClicked(QModelIndex index)
+{
+    // Called when a chapter or verse is double clicked
+
+}
+
+
+
+void SoftBibleStudy::on_lineEditBook_textChanged(QString text)
+{
+    // Called when the bible book filter field is modified.
+    QStringList all_books = bible.getBooks();
+
+    // Remove trailing spaces:
+    text = text.trimmed();
+
+    int chapter = 0;
+    int verse = 0;
+
+    // Check whether the user entered a search string that include book, chapter,
+    // and verse. For example: "1King 3 13"
+    QStringList search_words = text.split(" ");
+
+    // Allows the user to use more than one space as a seperator:
+    search_words.removeAll("");
+
+    if( search_words.count() > 1 )
+    {
+        bool ok;
+        int num1 = search_words.last().toInt(&ok);
+        if( ok )
+        {
+            chapter = num1;
+            search_words.removeLast();
+            if( search_words.count() > 1 )
+            {
+                bool ok2;
+                int num2 = search_words.last().toInt(&ok2);
+                if( ok2 )
+                {
+                    search_words.removeLast();
+                    chapter = num2;
+                    verse = num1;
+                }
+            }
+            text = search_words.join(" ");
+        }
+    }
+
+    // Now search all books to find the matching book:
+    if( text.isEmpty() )
+    {
+        // Show all bible books
+        if( ui->listBook->count() != all_books.count() )
+        {
+            // This is an important optimization
+            ui->listBook->clear();
+            ui->listBook->addItems(all_books);
+        }
+    }
+    else
+    {
+        // Show only the bible books that match the filter
+        QStringList filtered_books;
+        if( text.at(0).isDigit() )
+        {
+            // First character of filter text is a number. Special search, where the
+            // first character must be the first character of the first word of the book;
+            // while the rest of the filter must be the beginning of the second book word.
+            QString num_str(text.at(0));
+            QString name_str = text.remove(0, 1);
+            // Allow for space inbetween num_str and name_str e.g. "1 Peter"
+            name_str = name_str.trimmed();
+            for(int i=0; i<all_books.count(); i++)
+            {
+                QString book = all_books.at(i);
+                QStringList book_words = book.split(" ");
+
+                if( ! book_words.at(0).startsWith(num_str) )
+                    continue;
+                if( !book_words.at(1).startsWith(name_str, Qt::CaseInsensitive) )
+                    continue;
+
+                filtered_books.append(book);
+            }
+        }
+        else
+            filtered_books = all_books.filter(text, Qt::CaseInsensitive);
+
+        if( ui->listBook->count() != filtered_books.count() )
+        {
+            // This is an important optimization
+            // FIXME don't just check the count; check values
+            ui->listBook->clear();
+            ui->listBook->addItems(filtered_books);
+        }
+    }
+
+    if( ui->listBook->count() > 0 )
+        // Select the first row. This will take a longer time only if it will cause
+        // a new chapter to be loaded into the preview
+        ui->listBook->setCurrentRow(0);
+
+    if( chapter != 0 && chapter <= ui->listChapterNum->count() )
+    {
+        if( ui->listChapterNum->currentRow() != (chapter-1) )
+            ui->listChapterNum->setCurrentRow(chapter-1);
+        if( verse != 0 && verse <= ui->chapter_preview_list->count() )
+            ui->chapter_preview_list->setCurrentRow(verse-1);
+    }
+}
+
+void SoftBibleStudy::on_verse_ef_textChanged(QString new_string)
+{
+    int value = new_string.toInt();
+    ui->chapter_preview_list->setCurrentRow(value-1);
+}
+
+void SoftBibleStudy::on_chapter_ef_textChanged(QString new_string)
+{
+    int value = new_string.toInt();
+    ui->listChapterNum->setCurrentRow(value-1);
+}
+
+void SoftBibleStudy::on_search_button_clicked()
+{
+    QString search_text = ui->search_ef->text();
+    search_text = clean(search_text); // remove all none alphanumeric charecters
+
+    // Make sure that there is some text to do a search for, if none, then return
+    if(search_text.count()<1)
+    {
+        ui->search_ef->clear();
+        ui->search_ef->setPlaceholderText(tr("Please enter search text"));
+        return;
+    }
+
+    emit setWaitCursor();
+    int type = ui->comboBoxSearchType->currentIndex();
+    int range = ui->comboBoxSearchRange->currentIndex();
+
+    QRegExp rx, rxh;
+    rx.setCaseSensitivity(Qt::CaseInsensitive);
+    search_text.replace(" ","\\W*");
+    if(type == 0)
+    {
+        // Search text phrase
+        rx.setPattern(search_text);
+        rxh.setPattern(search_text);
+    }
+    else if(type == 1)
+    {
+        // Search whole word exsact phrase only
+        rx.setPattern("\\b"+search_text+"\\b");
+        rxh.setPattern("\\b"+search_text+"\\b");
+    }
+    else if(type == 2)
+    {
+        // Search begining of every line
+        rx.setPattern("^"+search_text);
+        rxh.setPattern(search_text);
+    }
+    else if(type == 3 || type == 4)
+    {
+        // Search for any of the search words
+        search_text.replace("\\W*","|");
+        rx.setPattern("\\b("+search_text+")\\b");
+        rxh.setPattern("\\b("+search_text+")\\b");
+    }
+
+    highlight->highlighter->setHighlightText(rxh.pattern()); // set highlighting rule
+
+    if(range == 0) // Search entire Bible
+        search_results = bible.searchBible((type == 4),rx);
+    else if(range == 1) // Search current book only
+        search_results = bible.searchBible((type == 4),rx,
+                                           bible.books.at(bible.getCurrentBookRow(ui->listBook->currentItem()->text())).bookId.toInt());
+    else if (range == 2) // Search current chapter only
+        search_results = bible.searchBible((type == 4),rx,
+                                           bible.books.at(bible.getCurrentBookRow(ui->listBook->currentItem()->text())).bookId.toInt(),
+                                           ui->listChapterNum->currentItem()->text().toInt());
+
+    ui->search_results_list->clear();
+
+    if (!search_results.isEmpty()) // If have results, then show them
+    {
+        if( not ui->result_label->isVisible() )
+        {
+            ui->lineEditBook->clear();
+            hidden_splitter_state = ui->results_splitter->saveState();
+            ui->result_label->show();
+            ui->result_count_label->show();
+            ui->search_results_list->show();
+            ui->hide_result_button->show();
+            ui->search_layout->addItem(ui->results_layout);
+            ui->results_splitter->restoreState(shown_splitter_state);
+        }
+        QStringList verse_list;
+        int count = search_results.count();
+
+        ui->result_count_label->setText(tr("Total\nresutls:\n%1").arg(count));
+
+        for(int i(0);i<count;i++)
+            verse_list.append(search_results.at(i).verse_text);
+        ui->search_results_list->addItems(verse_list);
+    }
+    else // If no relust, notify the user and hide result list
+        ui->result_count_label->setText(tr("No search\nresults."));
+
+    emit setArrowCursor();
+}
+
+void SoftBibleStudy::on_hide_result_button_clicked()
+{
+    shown_splitter_state = ui->results_splitter->saveState();
+    ui->result_label->hide();
+    ui->result_count_label->hide();
+    ui->search_results_list->hide();
+    ui->hide_result_button->hide();
+    ui->search_layout->removeItem(ui->results_layout);
+    ui->results_splitter->restoreState(hidden_splitter_state);
+}
+
+void SoftBibleStudy::on_search_results_list_currentRowChanged(int currentRow)
+{
+    if (currentRow >=0)
+    {
+        QStringList all_books = bible.getBooks();
+
+        if(ui->listBook->count() != all_books.count())
+        {
+            ui->listBook->clear();
+            ui->listBook->addItems(all_books);
+        }
+
+        int row = all_books.indexOf(search_results.at(currentRow).book);
+        ui->listBook->setCurrentRow(row);
+
+        ui->chapter_ef->setText(search_results.at(currentRow).chapter);
+        ui->verse_ef->setText(search_results.at(currentRow).verse);
+    }
+}
+
+void SoftBibleStudy::on_search_results_list_doubleClicked(QModelIndex index)
+{
+    on_search_results_list_currentRowChanged(index.row());
+
+}
+
+QByteArray SoftBibleStudy::getHiddenSplitterState()
+{
+    if(ui->hide_result_button->isHidden())
+        hidden_splitter_state = ui->results_splitter->saveState();
+    return hidden_splitter_state;
+}
+
+QByteArray SoftBibleStudy::getShownSplitterState()
+{
+    if(!ui->hide_result_button->isHidden())
+        shown_splitter_state = ui->results_splitter->saveState();
+    return shown_splitter_state;
+}
+
+void SoftBibleStudy::setHiddenSplitterState(QByteArray& state)
+{
+    hidden_splitter_state = state;
+    ui->results_splitter->restoreState(hidden_splitter_state);
+}
+
+void SoftBibleStudy::setShownSplitterState(QByteArray& state)
+{
+    shown_splitter_state = state;
+}
+
+BibleHistory SoftBibleStudy::getCurrentVerse()
+{
+    BibleHistory b;
+    QString selected_ids;
+
+    QString book = ui->listBook->currentItem()->text();
+    QString chapter = ui->chapter_ef->text();
+
+    int first_selected(-1),last_selected(-1);
+    for(int i(0);i<ui->chapter_preview_list->count();++i)
+    {
+        if(ui->chapter_preview_list->item(i)->isSelected())
+        {
+            if(first_selected == -1)
+                first_selected = i;
+            last_selected = i;
+            selected_ids += bible.previewIdList.at(i) + ",";
+        }
+    }
+    selected_ids.chop(1);
+
+    QString verse_text = ui->chapter_preview_list->item(first_selected)->text().trimmed();
+    b.verseIds = selected_ids;
+
+    if(first_selected==last_selected)
+    {
+        b.caption = book + " " + chapter + ":" + QString::number(first_selected+1);
+        b.captionLong = book + " " + chapter + ":" + verse_text;
+    }
+    else
+    {   // Create multi verse caption for display
+        int f(first_selected+1), l(last_selected+1),j(0);
+        QString v=verse_text,p=".";
+        while(v.at(j)!=p.at(0))
+            ++j;
+        v = v.remove(0,j);
+
+        b.caption = book + " " + chapter + ":" + QString::number(f) + "-" + QString::number(l);
+        b.captionLong = book + " " + chapter + ":" + QString::number(f) + "-" + QString::number(l) + v + "...";
+    }
+
+    return b;
+}
+
+bool SoftBibleStudy::isVerseSelected()
+{
+    if(ui->chapter_preview_list->selectedItems().count() >= 1)
+        return true;
+    else
+        return false;
+}
+
+void SoftBibleStudy::setBibleBookActive()
+{
+    ui->lineEditBook->setFocus();
+    ui->lineEditBook->selectAll();
+}
+
+void SoftBibleStudy::setBibleSearchActive()
+{
+    ui->search_ef->setFocus();
+    ui->search_ef->selectAll();
+}
+
