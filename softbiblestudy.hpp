@@ -48,7 +48,6 @@ public:
     bool showing; // whether we are currently showing to the projector
     Verse current_verse;
     QString version_string;
-    Theme theme;
     Settings mySettings;
 
     SoftBibleStudy *softProjector;
@@ -65,8 +64,7 @@ public:
     int getCurrentChapter();
 
 public slots:
-    void updateSetting(GeneralSettings &g,Theme &t, SlideShowSettings &ssets,
-                       BibleVersionSettings &bsets, BibleVersionSettings &bsets2);
+    void updateSetting();
     void saveSettings();
     void setWaitCursor();
     void setArrowCursor();
@@ -120,8 +118,7 @@ private:
     QButtonGroup search_type_buttongroup;
 
 private slots:
-    void applySetting(GeneralSettings &g, Theme &t, SlideShowSettings &s,
-                      BibleVersionSettings &b1, BibleVersionSettings &b2);
+    void applySetting();
     void updateEditActions();
     void on_actionNew_triggered();
     void on_actionEdit_triggered();

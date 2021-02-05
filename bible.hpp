@@ -21,7 +21,6 @@
 #define BIBLE_HPP
 
 #include <QtSql>
-#include "theme.hpp"
 #include "settings.hpp"
 
 class BibleVerse
@@ -98,7 +97,6 @@ public slots:
     QStringList getChapter(int book, int chapter);
     void getVerseAndCaption(QString &verse, QString &caption, QString verId, QString &bibId, bool useAbbr);
     int getCurrentBookRow(QString book);
-    Verse getCurrentVerseAndCaption(QList<int> currentRows, BibleSettings& sets, BibleVersionSettings& bv);
     void setBiblesId(QString& id);
     QString getBibleName();
     void loadOperatorBible();

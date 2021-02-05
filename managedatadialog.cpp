@@ -19,7 +19,7 @@
 
 #include "managedatadialog.hpp"
 #include "ui_managedatadialog.h"
-
+#include "spfunctions.hpp"
 Module::Module()
 {
 
@@ -32,7 +32,6 @@ ManageDataDialog::ManageDataDialog(QWidget *parent) :
 
     // Set tables
     bible_model = new BiblesModel;
-    themeModel = new ThemeModel;
 
     // Set Bible Table
     load_bibles();
@@ -57,7 +56,6 @@ ManageDataDialog::ManageDataDialog(QWidget *parent) :
 ManageDataDialog::~ManageDataDialog()
 {
     delete bible_model;
-    delete themeModel;
     delete progressDia;
     delete ui;
 }

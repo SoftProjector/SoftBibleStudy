@@ -27,7 +27,6 @@
 
 #include "managedata.hpp"
 #include "bibleinformationdialog.hpp"
-#include "theme.hpp"
 #include "moduledownloaddialog.hpp"
 #include "moduleprogressdialog.hpp"
 
@@ -67,9 +66,7 @@ signals:
 
 private:
     QList<Bibles> bible_list;
-    QList<ThemeInfo> themeList;
     BiblesModel *bible_model;
-    ThemeModel *themeModel;
     QNetworkAccessManager downManager;
     QNetworkReply *modDownload;
     QNetworkReply *currentDownload;

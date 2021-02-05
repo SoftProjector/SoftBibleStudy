@@ -55,12 +55,8 @@ SOURCES += main.cpp \
     bibleinformationdialog.cpp \
     settings.cpp \
     generalsettingwidget.cpp \
-    biblesettingwidget.cpp \
     controlbutton.cpp \
-    passivesettingwidget.cpp \
-    theme.cpp \
     spfunctions.cpp \
-    picturesettingwidget.cpp \
     moduledownloaddialog.cpp \
     moduleprogressdialog.cpp \
     displaysetting.cpp \
@@ -78,12 +74,8 @@ HEADERS += \
     bibleinformationdialog.hpp \
     settings.hpp \
     generalsettingwidget.hpp \
-    biblesettingwidget.hpp \
     controlbutton.hpp \
-    passivesettingwidget.hpp \
-    theme.hpp \
     spfunctions.hpp \
-    picturesettingwidget.hpp \
     moduledownloaddialog.hpp \
     moduleprogressdialog.hpp \
     displaysetting.hpp \
@@ -97,9 +89,6 @@ FORMS += \
     helpdialog.ui \
     bibleinformationdialog.ui \
     generalsettingwidget.ui \
-    biblesettingwidget.ui \
-    passivesettingwidget.ui \
-    picturesettingwidget.ui \
     moduledownloaddialog.ui \
     moduleprogressdialog.ui \
     printpreviewdialog.ui

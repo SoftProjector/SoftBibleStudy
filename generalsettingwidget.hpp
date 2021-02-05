@@ -22,7 +22,6 @@
 
 #include <QtWidgets>
 #include "settings.hpp"
-#include "theme.hpp"
 
 namespace Ui {
 class GeneralSettingWidget;
@@ -38,29 +37,22 @@ public:
 
 private:
     Ui::GeneralSettingWidget *ui;
-    GeneralSettings mySettings;
     Settings allSetings;
     QStringList monitors;
     QStringList themes;
     QList<int> themeIdList;
 
 public slots:
-    void setSettings(GeneralSettings settings);
-    void updateSecondaryDisplayScreen();
-    GeneralSettings getSettings();
+    //void setSettings(GeneralSettings settings);
+    //void updateSecondaryDisplayScreen();
+    //GeneralSettings getSettings();
 
 signals:
     void setDisp2Use(bool toUse);
-    void themeChanged(int theme_id);
 
 private slots:
     void on_pushButtonDefault_clicked();
-    void loadThemes();
     void loadSettings();
-    void on_comboBoxDisplayScreen_activated(const QString &arg1);
-    void on_comboBoxDisplayScreen_2_activated(int index);
-    void on_pushButtonAddTheme_clicked();
-    void on_comboBoxTheme_activated(int index);
 protected:
     virtual void changeEvent(QEvent *e);
 };

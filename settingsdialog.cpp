@@ -27,12 +27,8 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     generalSettingswidget = new GeneralSettingWidget;
-    passiveSettingwidget = new PassiveSettingWidget;
-    bibleSettingswidget = new BibleSettingWidget;
 
     ui->scrollAreaGeneralSettings->setWidget(generalSettingswidget);
-    ui->scrollAreaPassiveSettings->setWidget(passiveSettingwidget);
-    ui->scrollAreaBibleSettings->setWidget(bibleSettingswidget);
 
 
     btnOk = new QPushButton(tr("OK"));
@@ -47,29 +43,15 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     connect(generalSettingswidget,SIGNAL(setDisp2Use(bool)),this,SLOT(setUseDispScreen2(bool)));
     connect(generalSettingswidget,SIGNAL(themeChanged(int)),this,SLOT(changeTheme(int)));
 
-    // Connect Apply to all
-    connect(bibleSettingswidget,SIGNAL(applyBackToAll(int,QString,QPixmap)),this,SLOT(applyToAllActive(int,QString,QPixmap)));
 
 }
 
-void SettingsDialog::loadSettings(GeneralSettings &sets, Theme &thm, SlideShowSettings &ssets,
-                                  BibleVersionSettings &bsets, BibleVersionSettings &bsets2)
+void SettingsDialog::loadSettings()
 {
-    gsettings = sets;
-    theme = thm;
-    bsettings = bsets;
-    bsettings2 = bsets2;
-    ssettings = ssets;
 
-    // remember main display window setting if they will be changed
-    is_always_on_top = gsettings.displayIsOnTop;
-    current_display_screen = gsettings.displayScreen;
-    currentDisplayScreen2 = gsettings.displayScreen2;
 
-    // Set individual items
-    generalSettingswidget->setSettings(gsettings);
-    bibleSettingswidget->setBibleVersions(bsettings,bsettings2);
-    setThemes();
+
+
 }
 
 SettingsDialog::~SettingsDialog()
@@ -77,8 +59,6 @@ SettingsDialog::~SettingsDialog()
     delete ui;
 
     delete generalSettingswidget;
-    delete passiveSettingwidget;
-    delete bibleSettingswidget;
 
     delete btnOk;
     delete btnCancel;
@@ -102,12 +82,6 @@ void SettingsDialog::on_listWidget_currentRowChanged(int currentRow)
     ui->stackedWidget->setCurrentIndex(currentRow);
 }
 
-void SettingsDialog::setUseDispScreen2(bool toUse)
-{
-    passiveSettingwidget->setDispScreen2Visible(toUse);
-    bibleSettingswidget->setDispScreen2Visible(toUse);
-}
-
 void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
 {
     if(button == btnOk)
@@ -123,55 +97,7 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
 
 void SettingsDialog::applySettings()
 {
-    gsettings = generalSettingswidget->getSettings();
-    bibleSettingswidget->getBibleVersions(bsettings,bsettings2);
-    getThemes();
 
-    // Apply settings
-    emit updateSettings(gsettings,theme,ssettings,bsettings,bsettings2);
-
-    // Update <display_on_top> only when changed, or when screen location has been changed
-    if(is_always_on_top!=gsettings.displayIsOnTop
-            || current_display_screen!=gsettings.displayScreen
-            || currentDisplayScreen2!=gsettings.displayScreen2)
-    {
-        emit positionsDisplayWindow();
-    }
-
-    // Redraw the screen:
-    emit updateScreen();
-
-    // Save Settings
-    theme.saveThemeUpdate();
-
-    // reset display holders
-    is_always_on_top = gsettings.displayIsOnTop;
-    current_display_screen = gsettings.displayScreen;
-    currentDisplayScreen2 = gsettings.displayScreen2;
-}
-
-void SettingsDialog::getThemes()
-{
-    passiveSettingwidget->getSettings(theme.passive, theme.passive2);
-    bibleSettingswidget->getSettings(theme.bible, theme.bible2);
-}
-
-void SettingsDialog::setThemes()
-{
-    passiveSettingwidget->setSetings(theme.passive, theme.passive2);
-    bibleSettingswidget->setSettings(theme.bible, theme.bible2);
-}
-
-void SettingsDialog::changeTheme(int theme_id)
-{
-    // First save existing changes to the theme
-    getThemes();
-    theme.saveThemeUpdate();
-
-    // Then load changed theme
-    theme.setThemeId(theme_id);
-    theme.loadTheme();
-    setThemes();
 }
 
 void SettingsDialog::applyToAllActive(int t, QString backName, QPixmap background)
@@ -181,12 +107,10 @@ void SettingsDialog::applyToAllActive(int t, QString backName, QPixmap backgroun
     case 1:
         break;
     case 2:
-        bibleSettingswidget->setBackgroungds(backName,background);
         break;
     case 3:
-        bibleSettingswidget->setBackgroungds(backName,background);
         break;
     default:
-        bibleSettingswidget->setBackgroungds(backName,background);
+        break;
     }
 }

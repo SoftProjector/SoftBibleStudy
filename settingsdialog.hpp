@@ -22,10 +22,8 @@
 
 #include <QtWidgets>
 #include "settings.hpp"
-#include "theme.hpp"
 #include "generalsettingwidget.hpp"
-#include "passivesettingwidget.hpp"
-#include "biblesettingwidget.hpp"
+
 
 namespace Ui {
 class SettingsDialog;
@@ -41,12 +39,10 @@ public:
     void updateSecondaryBibleMenu();
 
 public slots:
-    void loadSettings(GeneralSettings& sets, Theme &thm, SlideShowSettings &ssets,
-                      BibleVersionSettings &bsets, BibleVersionSettings &bsets2);
+    void loadSettings();
 
 signals:
-    void updateSettings(GeneralSettings& sets, Theme &thm, SlideShowSettings &ssets,
-                        BibleVersionSettings& bsets, BibleVersionSettings& bsets2);
+    void updateSettings();
     void positionsDisplayWindow();
     void updateScreen();
 
@@ -57,15 +53,12 @@ private:
     int currentDisplayScreen2;
     bool is_always_on_top;
 
-    GeneralSettings gsettings;
-    Theme theme;
+
     BibleVersionSettings bsettings;
     BibleVersionSettings bsettings2;
-    SlideShowSettings ssettings;
+
 
     GeneralSettingWidget *generalSettingswidget;
-    PassiveSettingWidget *passiveSettingwidget;
-    BibleSettingWidget *bibleSettingswidget;
 
     QPushButton *btnOk;
     QPushButton *btnCancel;
@@ -73,12 +66,9 @@ private:
 
 private slots:
     void on_listWidget_currentRowChanged(int currentRow);
-    void setUseDispScreen2(bool toUse);
-    void on_buttonBox_clicked(QAbstractButton *button);
+      void on_buttonBox_clicked(QAbstractButton *button);
     void applySettings();
-    void changeTheme(int theme_id);
-    void getThemes();
-    void setThemes();
+
     void applyToAllActive(int t, QString backName, QPixmap background);
 
 protected:

@@ -28,14 +28,6 @@ SoftBibleStudy::SoftBibleStudy(QWidget *parent)
 {
     // Load settings
     mySettings.loadSettings();
-    theme.setThemeId(mySettings.general.currentThemeId);
-    theme.loadTheme();
-    // Reset current theme id if initial was 0
-    mySettings.general.currentThemeId = theme.getThemeId();
-
-    // Update Themes Bible Versions
-    theme.bible.versions = mySettings.bibleSets;
-    theme.bible2.versions = mySettings.bibleSets2;
 
     //Setting up the Display Screen
     desktop = new QDesktopWidget();
@@ -59,7 +51,7 @@ SoftBibleStudy::SoftBibleStudy(QWidget *parent)
     // display window (Mac OS X)
 
     // Apply Settings
-    applySetting(mySettings.general, theme, mySettings.slideSets, mySettings.bibleSets, mySettings.bibleSets2);
+    applySetting();
 
 
     showing = false;
@@ -161,30 +153,18 @@ void SoftBibleStudy::saveSettings()
 
     // save settings
     mySettings.saveSettings();
-    theme.saveThemeUpdate();
 }
 
-void SoftBibleStudy::updateSetting(GeneralSettings &g, Theme &t, SlideShowSettings &ssets,
-                                  BibleVersionSettings &bsets, BibleVersionSettings &bsets2)
+void SoftBibleStudy::updateSetting()
 {
-    mySettings.general = g;
-    mySettings.slideSets = ssets;
-    mySettings.bibleSets = bsets;
-    mySettings.bibleSets2 = bsets2;
     mySettings.saveSettings();
-    theme = t;
-    loadBibles(bibleSettings.operatorBible);
-    bibleSettings = mySettings.bibleSets;
+    loadBibles(mySettings.bibleVersions.bibleOne);
 
-
-    theme.bible.versions = mySettings.bibleSets;
-    theme.bible2.versions = mySettings.bibleSets2;
 }
 
-void SoftBibleStudy::applySetting(GeneralSettings &g, Theme &t, SlideShowSettings &s,
-                                 BibleVersionSettings &b1, BibleVersionSettings &b2)
+void SoftBibleStudy::applySetting()
 {
-    updateSetting(g,t,s,b1,b2);
+    updateSetting();
 
     // Apply splitter states
     setHiddenSplitterState(mySettings.spMain.bibleHiddenSplitter);
@@ -334,27 +314,11 @@ void SoftBibleStudy::on_actionManage_Database_triggered()
     manageDialog->setDataDir(appDataDir);
     manageDialog->exec();
 
-    // Relaod themes if a theme has been deleted
-    if (manageDialog->reloadThemes)
-    {
-        // Check if current theme has been deleted
-        sq.exec("SELECT * FROM Themes WHERE id = " + QString::number(theme.getThemeId()));
-        if(!sq.first())
-        {
-            GeneralSettings g = mySettings.general;
-            Theme t;
-            sq.exec("SELECT id FROM Themes");
-            sq.first();
-            t.setThemeId(sq.value(0).toInt());
-            t.loadTheme();
-            g.currentThemeId = t.getThemeId();
-            updateSetting(g,t,mySettings.slideSets,mySettings.bibleSets,mySettings.bibleSets2);
-        }
-    }
 
     // Reload Bibles if Bible has been deleted
     if (manageDialog->reload_bible)
     {
+        /*
         // check if Primary bible has been removed
         sq.exec("SELECT * FROM BibleVersions WHERE id = " + mySettings.bibleSets.primaryBible);
         if (!sq.first())
@@ -384,6 +348,7 @@ void SoftBibleStudy::on_actionManage_Database_triggered()
         if (!sq.first())
             mySettings.bibleSets.operatorBible = "same";
         bibleSettings = mySettings.bibleSets;
+        */
     }
 }
 
@@ -397,7 +362,7 @@ void SoftBibleStudy::on_actionAbout_triggered()
 
 void SoftBibleStudy::on_actionSettings_triggered()
 {
-    settingsDialog->loadSettings(mySettings.general,theme,mySettings.slideSets, mySettings.bibleSets,mySettings.bibleSets2);
+    //settingsDialog->loadSettings(mySettings.general,theme,mySettings.slideSets, mySettings.bibleSets,mySettings.bibleSets2);
     settingsDialog->exec();
 }
 
@@ -492,7 +457,7 @@ void SoftBibleStudy::on_actionPrint_triggered()
     PrintPreviewDialog* p;
     p = new PrintPreviewDialog(this);
 
-        p->setText(mySettings.bibleSets.operatorBible + "," + mySettings.bibleSets.primaryBible,
+        p->setText(mySettings.bibleVersions.bibleOne ,
                    getCurrentBook(),getCurrentChapter());
         p->exec();
 
@@ -516,15 +481,12 @@ void SoftBibleStudy::on_actionPrint_triggered()
 
 void SoftBibleStudy::loadBibles(QString initialId)
 {
-    // if operator bible = "same", then set it to primary bible
-    if(bibleSettings.operatorBible == "same")
-        bibleSettings.operatorBible = bibleSettings.primaryBible;
 
     // Check if primary bible is different that what has been loaded already
     // If it is different, then reload the bible list
-    if(initialId!=bibleSettings.operatorBible)
+    if(initialId!=mySettings.bibleVersions.bibleOne)
     {
-        bible.setBiblesId(bibleSettings.operatorBible);
+        bible.setBiblesId(mySettings.bibleVersions.bibleOne);
         bible.loadOperatorBible();
         ui->listBook->clear();
         ui->listBook->addItems(bible.getBooks());

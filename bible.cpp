@@ -166,31 +166,6 @@ QStringList Bible::getChapter(int book, int chapter)
     return verseList;
 }
 
-Verse Bible::getCurrentVerseAndCaption(QList<int>  currentRows, BibleSettings& sets, BibleVersionSettings &bv)
-{
-    QString verse_id;
-    for(int i(0);i<currentRows.count();++i)
-    {
-        verse_id += currentIdList.at(currentRows.at(i)) + ",";
-    }
-    verse_id.chop(1);
-
-    Verse v;
-
-    // get primary verse
-    getVerseAndCaption(v.primary_text,v.primary_caption,verse_id,bv.primaryBible,sets.useAbbriviation);
-
-    // get secondary verse
-    if(bv.primaryBible!=bv.secondaryBible && bv.secondaryBible!="none")
-        getVerseAndCaption(v.secondary_text,v.secondary_caption,verse_id,bv.secondaryBible,sets.useAbbriviation);
-
-    // get trinary versse
-    if(bv.trinaryBible!=bv.primaryBible && bv.trinaryBible!=bv.secondaryBible && bv.trinaryBible!="none")
-        getVerseAndCaption(v.trinary_text,v.trinary_caption,verse_id,bv.trinaryBible,sets.useAbbriviation);
-
-    return v;
-}
-
 void Bible::getVerseAndCaption(QString& verse, QString& caption, QString verId, QString& bibId, bool useAbbr)
 {
     QString verse_old, verse_show, verse_n, verse_nold, verse_nfirst, chapter;
