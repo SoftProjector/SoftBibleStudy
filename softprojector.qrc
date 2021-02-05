@@ -100,7 +100,5 @@
         <file>icons/speaker.png</file>
         <file>icons/speakerMute.png</file>
     </qresource>
-    <qresource prefix="/">
-        <file>DisplayArea.qml</file>
-    </qresource>
+    <qresource prefix="/"/>
 </RCC>

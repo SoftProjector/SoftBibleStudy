@@ -54,13 +54,11 @@ SOURCES += main.cpp \
     helpdialog.cpp \
     bibleinformationdialog.cpp \
     settings.cpp \
-    controlbutton.cpp \
     spfunctions.cpp \
     moduledownloaddialog.cpp \
     moduleprogressdialog.cpp \
     displaysetting.cpp \
-    printpreviewdialog.cpp \
-    spimageprovider.cpp
+    printpreviewdialog.cpp
 HEADERS += \
     softbiblestudy.hpp \
     bible.hpp \
@@ -72,13 +70,11 @@ HEADERS += \
     helpdialog.hpp \
     bibleinformationdialog.hpp \
     settings.hpp \
-    controlbutton.hpp \
     spfunctions.hpp \
     moduledownloaddialog.hpp \
     moduleprogressdialog.hpp \
     displaysetting.hpp \
-    printpreviewdialog.hpp \
-    spimageprovider.hpp
+    printpreviewdialog.hpp
 FORMS += \
     softbiblestudy.ui \
     settingsdialog.ui \
