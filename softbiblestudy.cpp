@@ -58,21 +58,6 @@ SoftBibleStudy::SoftBibleStudy(QWidget *parent)
 
     connect(languageGroup, SIGNAL(triggered(QAction*)), this, SLOT(switchLanguage(QAction*)));
 
-    // Add tool bar actions
-    ui->toolBarFile->addAction(ui->actionNewSchedule);
-    ui->toolBarFile->addAction(ui->actionOpenSchedule);
-    ui->toolBarFile->addAction(ui->actionSaveSchedule);
-    ui->toolBarFile->addSeparator();
-    ui->toolBarFile->addAction(ui->actionPrint);
-
-    ui->toolBarSchedule->addAction(ui->actionMoveScheduleTop);
-    ui->toolBarSchedule->addAction(ui->actionMoveScheduleUp);
-    ui->toolBarSchedule->addAction(ui->actionMoveScheduleDown);
-    ui->toolBarSchedule->addAction(ui->actionMoveScheduleBottom);
-    ui->toolBarSchedule->addSeparator();
-    ui->toolBarSchedule->addAction(ui->actionScheduleAdd);
-    ui->toolBarSchedule->addAction(ui->actionScheduleRemove);
-    ui->toolBarSchedule->addAction(ui->actionScheduleClear);
 
     ui->toolBarEdit->addAction(ui->actionNew);
     ui->toolBarEdit->addAction(ui->actionEdit);
@@ -81,19 +66,8 @@ SoftBibleStudy::SoftBibleStudy(QWidget *parent)
     ui->toolBarEdit->addSeparator();
     ui->toolBarEdit->addAction(ui->actionSettings);
     ui->toolBarEdit->addSeparator();
-    ui->toolBarEdit->addAction(ui->actionSong_Counter);
     ui->toolBarEdit->addSeparator();
     ui->toolBarEdit->addAction(ui->action_Help);
-
-    ui->toolBarShow->addAction(ui->actionShow);
-    ui->toolBarShow->addAction(ui->actionClear);
-    ui->toolBarShow->addAction(ui->actionHide);
-    ui->toolBarShow->addAction(ui->actionCloseDisplay);
-
-    ui->actionShow->setEnabled(false);
-    ui->actionHide->setEnabled(false);
-    ui->actionClear->setEnabled(false);
-
 
     on_hide_result_button_clicked();
 
@@ -107,7 +81,7 @@ SoftBibleStudy::SoftBibleStudy(QWidget *parent)
     ui->search_results_list->setItemDelegate(highlight);
 
     version_string = "0.0.1";
-    this->setWindowTitle("SoftProjector " + version_string);
+    this->setWindowTitle("SoftBibleStudy" + version_string);
 }
 
 SoftBibleStudy::~SoftBibleStudy()
