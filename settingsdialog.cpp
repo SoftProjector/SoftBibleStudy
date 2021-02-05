@@ -26,10 +26,6 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     ui(new Ui::SettingsDialog)
 {
     ui->setupUi(this);
-    generalSettingswidget = new GeneralSettingWidget;
-
-    ui->scrollAreaGeneralSettings->setWidget(generalSettingswidget);
-
 
     btnOk = new QPushButton(tr("OK"));
     btnCancel = new QPushButton(tr("Cancel"));
@@ -39,27 +35,16 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     ui->buttonBox->addButton(btnCancel,QDialogButtonBox::RejectRole);
     ui->buttonBox->addButton(btnApply,QDialogButtonBox::ApplyRole);
 
-    // Connect display screen slot
-    connect(generalSettingswidget,SIGNAL(setDisp2Use(bool)),this,SLOT(setUseDispScreen2(bool)));
-    connect(generalSettingswidget,SIGNAL(themeChanged(int)),this,SLOT(changeTheme(int)));
-
-
 }
 
 void SettingsDialog::loadSettings()
 {
-
-
-
 
 }
 
 SettingsDialog::~SettingsDialog()
 {
     delete ui;
-
-    delete generalSettingswidget;
-
     delete btnOk;
     delete btnCancel;
     delete btnApply;
@@ -100,17 +85,3 @@ void SettingsDialog::applySettings()
 
 }
 
-void SettingsDialog::applyToAllActive(int t, QString backName, QPixmap background)
-{
-    switch (t)
-    {
-    case 1:
-        break;
-    case 2:
-        break;
-    case 3:
-        break;
-    default:
-        break;
-    }
-}

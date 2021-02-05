@@ -54,7 +54,6 @@ SOURCES += main.cpp \
     helpdialog.cpp \
     bibleinformationdialog.cpp \
     settings.cpp \
-    generalsettingwidget.cpp \
     controlbutton.cpp \
     spfunctions.cpp \
     moduledownloaddialog.cpp \
@@ -73,7 +72,6 @@ HEADERS += \
     helpdialog.hpp \
     bibleinformationdialog.hpp \
     settings.hpp \
-    generalsettingwidget.hpp \
     controlbutton.hpp \
     spfunctions.hpp \
     moduledownloaddialog.hpp \
@@ -88,7 +86,6 @@ FORMS += \
     managedatadialog.ui \
     helpdialog.ui \
     bibleinformationdialog.ui \
-    generalsettingwidget.ui \
     moduledownloaddialog.ui \
     moduleprogressdialog.ui \
     printpreviewdialog.ui

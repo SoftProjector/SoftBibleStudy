@@ -337,7 +337,7 @@ void SoftBibleStudy::on_actionAbout_triggered()
 void SoftBibleStudy::on_actionSettings_triggered()
 {
     //settingsDialog->loadSettings(mySettings.general,theme,mySettings.slideSets, mySettings.bibleSets,mySettings.bibleSets2);
-    settingsDialog->exec();
+    //settingsDialog->exec();
 }
 
 void SoftBibleStudy::on_action_Help_triggered()

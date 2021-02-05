@@ -22,7 +22,6 @@
 
 #include <QtWidgets>
 #include "settings.hpp"
-#include "generalsettingwidget.hpp"
 
 
 namespace Ui {
@@ -36,29 +35,15 @@ class SettingsDialog : public QDialog {
 public:
     explicit SettingsDialog(QWidget *parent = 0);
     virtual ~SettingsDialog();
-    void updateSecondaryBibleMenu();
 
 public slots:
     void loadSettings();
 
 signals:
     void updateSettings();
-    void positionsDisplayWindow();
-    void updateScreen();
 
 private:
     Ui::SettingsDialog *ui;
-
-    int current_display_screen;
-    int currentDisplayScreen2;
-    bool is_always_on_top;
-
-
-    BibleVersionSettings bsettings;
-    BibleVersionSettings bsettings2;
-
-
-    GeneralSettingWidget *generalSettingswidget;
 
     QPushButton *btnOk;
     QPushButton *btnCancel;
@@ -66,10 +51,8 @@ private:
 
 private slots:
     void on_listWidget_currentRowChanged(int currentRow);
-      void on_buttonBox_clicked(QAbstractButton *button);
+    void on_buttonBox_clicked(QAbstractButton *button);
     void applySettings();
-
-    void applyToAllActive(int t, QString backName, QPixmap background);
 
 protected:
     virtual void changeEvent(QEvent *e);
