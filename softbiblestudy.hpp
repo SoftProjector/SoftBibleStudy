@@ -77,7 +77,7 @@ public slots:
     QByteArray getShownSplitterState();
     void setHiddenSplitterState(QByteArray& state);
     void setShownSplitterState(QByteArray& state);
-    void loadBibles(QString initialId);
+    void loadBibles();
     BibleHistory getCurrentVerse();
     bool isVerseSelected();
     void setBibleBookActive();
@@ -110,10 +110,11 @@ private:
 
 
     BibleVersionSettings bibleSettings;
+    QList<Bibles> bibleList;
     HighlighterDelegate *highlight;
     QList<BibleSearch> search_results;
     QList<BibleHistory> history_items;
-    QIntValidator *chapter_validator, *verse_validator;
+    QIntValidator *chapter_validator;
     QByteArray hidden_splitter_state, shown_splitter_state;
     QButtonGroup search_type_buttongroup;
 
@@ -140,21 +141,22 @@ private slots:
     //void on_actionClear_triggered();
 
 
-
-
     void on_search_results_list_doubleClicked(QModelIndex index);
     void on_search_results_list_currentRowChanged(int currentRow);
     void on_hide_result_button_clicked();
     void on_search_button_clicked();
     void on_chapter_ef_textChanged(QString new_string);
-    void on_verse_ef_textChanged(QString new_string);
     void on_lineEditBook_textChanged(QString );
     void on_chapter_preview_list_doubleClicked(QModelIndex index);
     void on_chapter_preview_list_currentRowChanged(int currentRow);
     void on_listChapterNum_currentTextChanged(QString currentText);
     void on_listBook_currentTextChanged(QString currentText);
 
+    void on_comboBoxBibleOne_activated(int index);
 
+    void on_comboBoxBibleTwo_activated(int index);
+
+    void on_comboBoxBibleThree_activated(int index);
 
 protected:
     void closeEvent(QCloseEvent *event);

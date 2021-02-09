@@ -38,7 +38,13 @@ SoftBibleStudy::SoftBibleStudy(QWidget *parent)
     helpDialog = new HelpDialog();
     manageDialog = new ManageDataDialog(this);
 
+
+
     ui->setupUi(this);
+
+    chapter_validator = new QIntValidator(1, 1, ui->chapter_ef);
+
+    ui->chapter_ef->setValidator( chapter_validator );
 
     // Create action group for language slections
     languagePath = qApp->applicationDirPath()+QString(QDir::separator())+"translations"+QString(QDir::separator());
@@ -52,7 +58,7 @@ SoftBibleStudy::SoftBibleStudy(QWidget *parent)
 
     // Apply Settings
     applySetting();
-
+    loadBibles();
 
     showing = false;
 
@@ -71,11 +77,7 @@ SoftBibleStudy::SoftBibleStudy(QWidget *parent)
 
     on_hide_result_button_clicked();
 
-    chapter_validator = new QIntValidator(1, 1, ui->chapter_ef);
-    verse_validator = new QIntValidator(1, 1, ui->verse_ef);
 
-    ui->chapter_ef->setValidator( chapter_validator );
-    ui->verse_ef->setValidator( verse_validator );
 
     highlight = new HighlighterDelegate(ui->search_results_list);
     ui->search_results_list->setItemDelegate(highlight);
@@ -98,7 +100,6 @@ SoftBibleStudy::~SoftBibleStudy()
     delete helpDialog;
 
     delete chapter_validator;
-    delete verse_validator;
     delete ui;
 }
 
@@ -132,12 +133,12 @@ void SoftBibleStudy::saveSettings()
 void SoftBibleStudy::updateSetting()
 {
     mySettings.saveSettings();
-    loadBibles(mySettings.bibleVersions.bibleOne);
-
 }
 
 void SoftBibleStudy::applySetting()
 {
+
+    qDebug()<<mySettings.bibleVersions.bibleOne<<mySettings.bibleVersions.bibleTwo<<mySettings.bibleVersions.bibleThree;
     updateSetting();
 
     // Apply splitter states
@@ -167,6 +168,24 @@ void SoftBibleStudy::applySetting()
             }
         }
     }
+
+    Database db;
+    bibleList = db.getBibles();
+    QStringList bl;
+
+    foreach(Bibles b, bibleList){
+        bl.append(b.title);
+    }
+
+    ui->comboBoxBibleOne->addItems(bl);
+    ui->comboBoxBibleTwo->addItems(bl);
+    ui->comboBoxBibleThree->addItems(bl);
+
+    ui->comboBoxBibleOne->setCurrentText(bibleList.at(mySettings.bibleVersions.bibleOne.toInt()-1).title);
+    ui->comboBoxBibleTwo->setCurrentText(bibleList.at(mySettings.bibleVersions.bibleTwo.toInt()-1).title);
+    ui->comboBoxBibleThree->setCurrentText(bibleList.at(mySettings.bibleVersions.bibleThree.toInt()-1).title);
+
+
     cur_locale = splocale;
     retranslateUis();
 }
@@ -453,19 +472,15 @@ void SoftBibleStudy::on_actionPrint_triggered()
 //    }
 //}
 
-void SoftBibleStudy::loadBibles(QString initialId)
+void SoftBibleStudy::loadBibles()
 {
 
-    // Check if primary bible is different that what has been loaded already
-    // If it is different, then reload the bible list
-    if(initialId!=mySettings.bibleVersions.bibleOne)
-    {
-        bible.setBiblesId(mySettings.bibleVersions.bibleOne);
-        bible.loadOperatorBible();
-        ui->listBook->clear();
-        ui->listBook->addItems(bible.getBooks());
-        ui->listBook->setCurrentRow(0);
-    }
+    bible.setBiblesId(mySettings.bibleVersions.bibleOne);
+    bible.loadOperatorBible();
+    ui->listBook->clear();
+    ui->listBook->addItems(bible.getBooks());
+    ui->listBook->setCurrentRow(0);
+
 }
 
 void SoftBibleStudy::on_listBook_currentTextChanged(QString currentText)
@@ -505,7 +520,6 @@ void SoftBibleStudy::on_listChapterNum_currentTextChanged(QString currentText)
         ui->chapter_preview_list->clear();
         ui->chapter_preview_list->addItems(currentChapterList);
         ui->chapter_ef->setText(currentText);
-        verse_validator->setTop(ui->chapter_preview_list->count());
         ui->chapter_preview_list->setCurrentRow(0);
     }
     else
@@ -543,7 +557,7 @@ bool SoftBibleStudy::eventFilter(QObject *object, QEvent *event)
 
 void SoftBibleStudy::on_chapter_preview_list_currentRowChanged(int currentRow)
 {
-    ui->verse_ef->setText(QString::number(currentRow+1));
+
 }
 
 void SoftBibleStudy::on_chapter_preview_list_doubleClicked(QModelIndex index)
@@ -656,12 +670,6 @@ void SoftBibleStudy::on_lineEditBook_textChanged(QString text)
         if( verse != 0 && verse <= ui->chapter_preview_list->count() )
             ui->chapter_preview_list->setCurrentRow(verse-1);
     }
-}
-
-void SoftBibleStudy::on_verse_ef_textChanged(QString new_string)
-{
-    int value = new_string.toInt();
-    ui->chapter_preview_list->setCurrentRow(value-1);
 }
 
 void SoftBibleStudy::on_chapter_ef_textChanged(QString new_string)
@@ -785,7 +793,6 @@ void SoftBibleStudy::on_search_results_list_currentRowChanged(int currentRow)
         ui->listBook->setCurrentRow(row);
 
         ui->chapter_ef->setText(search_results.at(currentRow).chapter);
-        ui->verse_ef->setText(search_results.at(currentRow).verse);
     }
 }
 
@@ -884,3 +891,19 @@ void SoftBibleStudy::setBibleSearchActive()
     ui->search_ef->selectAll();
 }
 
+
+void SoftBibleStudy::on_comboBoxBibleOne_activated(int index)
+{
+    mySettings.bibleVersions.bibleOne = bibleList.at(index).bibleId;
+    loadBibles();
+}
+
+void SoftBibleStudy::on_comboBoxBibleTwo_activated(int index)
+{
+     mySettings.bibleVersions.bibleTwo = bibleList.at(index).bibleId;
+}
+
+void SoftBibleStudy::on_comboBoxBibleThree_activated(int index)
+{
+     mySettings.bibleVersions.bibleThree = bibleList.at(index).bibleId;
+}
