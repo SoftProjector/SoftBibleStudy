@@ -83,22 +83,28 @@ QString Bible::getBookName(int id)
 void Bible::getVerseRef(QString vId, QString &book, int &chapter, int &verse)
 {
     if(vId.contains(","))
+    {
         vId = vId.split(",").first();
+    }
 
-    foreach(const BibleVerse &bv, operatorBible)
+    foreach(const BibleVerse &bv, bibleVerseList)
     {
         if(bv.verseId == vId)
         {
             book = QString::number(bv.book);
             chapter = bv.chapter;
             verse = bv.verseNumber;
+            break;
         }
     }
 
     foreach (const BibleBook bk, books)
     {
         if(bk.bookId == book)
+        {
             book = bk.book;
+            break;
+        }
     }
 }
 
@@ -106,9 +112,11 @@ int Bible::getVerseNumberLast(QString vId)
 {
     int vernum(0);
     if(vId.contains(","))
+    {
         vId = vId.split(",").last();
+    }
 
-    foreach(const BibleVerse &bv, operatorBible)
+    foreach(const BibleVerse &bv, bibleVerseList)
     {
         if(bv.verseId == vId)
         {
@@ -137,13 +145,15 @@ QStringList Bible::getChapter(int book, int chapter)
 {
     QString verseText, id;
     int verse(0), verse_old(0);
+    bool chapterStarted = false;
 
     previewIdList.clear();
-    verseList.clear();
-    foreach (const BibleVerse &bv,operatorBible)
+    QStringList verseList;
+    foreach (const BibleVerse &bv, bibleVerseList)
     {
         if(bv.book == book && bv.chapter == chapter)
         {
+            chapterStarted = true;
             verse  = bv.verseNumber;
             if(verse==verse_old)
             {
@@ -160,6 +170,11 @@ QStringList Bible::getChapter(int book, int chapter)
             verseList << QString::number(verse) + ". " + verseText;
             previewIdList << id;
             verse_old = verse;
+
+            continue;
+        }
+        else if (chapterStarted){
+            break;
         }
     }
 
@@ -278,7 +293,7 @@ QList<BibleSearch> Bible::searchBible(bool allWords, QRegExp searchExp)
     sw.remove("\\b(");
     sw.remove(")\\b");
 
-    foreach(const BibleVerse &bv,operatorBible)
+    foreach(const BibleVerse &bv,bibleVerseList)
     {
         if(bv.verseText.contains(searchExp))
         {
@@ -313,7 +328,7 @@ QList<BibleSearch> Bible::searchBible(bool allWords, QRegExp searchExp, int book
     sw.remove("\\b(");
     sw.remove(")\\b");
 
-    foreach(const BibleVerse &bv,operatorBible)
+    foreach(const BibleVerse &bv,bibleVerseList)
     {
         if(bv.verseText.contains(searchExp) && bv.book == book)
         {
@@ -347,7 +362,7 @@ QList<BibleSearch> Bible::searchBible(bool allWords, QRegExp searchExp, int book
     sw.remove("\\b(");
     sw.remove(")\\b");
 
-    foreach(const BibleVerse &bv,operatorBible)
+    foreach(const BibleVerse &bv,bibleVerseList)
     {
         if(bv.verseText.contains(searchExp) && bv.book == book && bv.chapter == chapter)
         {
@@ -390,9 +405,9 @@ void Bible::addSearchResult(const BibleVerse &bv, QList<BibleSearch> &bsl)
     bsl.append(results);
 }
 
-void Bible::loadOperatorBible()
+void Bible::loadBible()
 {
-    operatorBible.clear();
+    bibleVerseList.clear();
     BibleVerse bv;
     QSqlQuery sq;
     sq.exec("SELECT verse_id, book, chapter, verse, verse_text FROM BibleVerse WHERE bible_id = '"+bibleId+"'");
@@ -403,6 +418,12 @@ void Bible::loadOperatorBible()
         bv.chapter = sq.value(2).toInt();
         bv.verseNumber = sq.value(3).toInt();
         bv.verseText = sq.value(4).toString().trimmed();
-        operatorBible.append(bv);
+        bibleVerseList.append(bv);
     }
+}
+
+void Bible::loadBible(QString &id)
+{
+    setBiblesId(id);
+    loadBible();
 }

@@ -170,10 +170,10 @@ void SoftBibleStudy::applySetting()
     }
 
     Database db;
-    bibleList = db.getBibles();
+    biblesInDatabase = db.getBibles();
     QStringList bl;
 
-    foreach(Bibles b, bibleList){
+    foreach(Bibles b, biblesInDatabase){
         bl.append(b.title);
     }
 
@@ -181,9 +181,9 @@ void SoftBibleStudy::applySetting()
     ui->comboBoxBibleTwo->addItems(bl);
     ui->comboBoxBibleThree->addItems(bl);
 
-    ui->comboBoxBibleOne->setCurrentText(bibleList.at(mySettings.bibleVersions.bibleOne.toInt()-1).title);
-    ui->comboBoxBibleTwo->setCurrentText(bibleList.at(mySettings.bibleVersions.bibleTwo.toInt()-1).title);
-    ui->comboBoxBibleThree->setCurrentText(bibleList.at(mySettings.bibleVersions.bibleThree.toInt()-1).title);
+    ui->comboBoxBibleOne->setCurrentText(biblesInDatabase.at(mySettings.bibleVersions.bibleOne.toInt()-1).title);
+    ui->comboBoxBibleTwo->setCurrentText(biblesInDatabase.at(mySettings.bibleVersions.bibleTwo.toInt()-1).title);
+    ui->comboBoxBibleThree->setCurrentText(biblesInDatabase.at(mySettings.bibleVersions.bibleThree.toInt()-1).title);
 
 
     cur_locale = splocale;
@@ -474,13 +474,13 @@ void SoftBibleStudy::on_actionPrint_triggered()
 
 void SoftBibleStudy::loadBibles()
 {
+    bible1.loadBible(mySettings.bibleVersions.bibleOne);
+    bible2.loadBible(mySettings.bibleVersions.bibleTwo);
+    bible3.loadBible(mySettings.bibleVersions.bibleThree);
 
-    bible.setBiblesId(mySettings.bibleVersions.bibleOne);
-    bible.loadOperatorBible();
     ui->listBook->clear();
-    ui->listBook->addItems(bible.getBooks());
+    ui->listBook->addItems(bible1.getBooks());
     ui->listBook->setCurrentRow(0);
-
 }
 
 void SoftBibleStudy::on_listBook_currentTextChanged(QString currentText)
@@ -488,7 +488,7 @@ void SoftBibleStudy::on_listBook_currentTextChanged(QString currentText)
     int s = ui->listBook->currentRow();
     if( s != -1 )
     {
-        int max_chapter = bible.books.at(bible.getCurrentBookRow(currentText)).chapterCount;
+        int max_chapter = bible1.books.at(bible1.getCurrentBookRow(currentText)).chapterCount;
         ui->listChapterNum->clear();
         for(int i=0; i<max_chapter; ++i)
             ui->listChapterNum->addItem(QString::number(i+1));
@@ -514,7 +514,7 @@ void SoftBibleStudy::on_listChapterNum_currentTextChanged(QString currentText)
         {
             currentBook = getCurrentBook();
             currentChapter = currentText.toInt();
-            currentChapterList = bible.getChapter(bible.books.at(bible.getCurrentBookRow(currentBook)).bookId.toInt(), currentChapter);
+            currentChapterList = bible1.getChapter(bible1.books.at(bible1.getCurrentBookRow(currentBook)).bookId.toInt(), currentChapter);
         }
 
         ui->chapter_preview_list->clear();
@@ -571,7 +571,7 @@ void SoftBibleStudy::on_chapter_preview_list_doubleClicked(QModelIndex index)
 void SoftBibleStudy::on_lineEditBook_textChanged(QString text)
 {
     // Called when the bible book filter field is modified.
-    QStringList all_books = bible.getBooks();
+    QStringList all_books = bible1.getBooks();
 
     // Remove trailing spaces:
     text = text.trimmed();
@@ -727,13 +727,13 @@ void SoftBibleStudy::on_search_button_clicked()
     highlight->highlighter->setHighlightText(rxh.pattern()); // set highlighting rule
 
     if(range == 0) // Search entire Bible
-        search_results = bible.searchBible((type == 4),rx);
+        search_results = bible1.searchBible((type == 4),rx);
     else if(range == 1) // Search current book only
-        search_results = bible.searchBible((type == 4),rx,
-                                           bible.books.at(bible.getCurrentBookRow(ui->listBook->currentItem()->text())).bookId.toInt());
+        search_results = bible1.searchBible((type == 4),rx,
+                                           bible1.books.at(bible1.getCurrentBookRow(ui->listBook->currentItem()->text())).bookId.toInt());
     else if (range == 2) // Search current chapter only
-        search_results = bible.searchBible((type == 4),rx,
-                                           bible.books.at(bible.getCurrentBookRow(ui->listBook->currentItem()->text())).bookId.toInt(),
+        search_results = bible1.searchBible((type == 4),rx,
+                                           bible1.books.at(bible1.getCurrentBookRow(ui->listBook->currentItem()->text())).bookId.toInt(),
                                            ui->listChapterNum->currentItem()->text().toInt());
 
     ui->search_results_list->clear();
@@ -781,7 +781,7 @@ void SoftBibleStudy::on_search_results_list_currentRowChanged(int currentRow)
 {
     if (currentRow >=0)
     {
-        QStringList all_books = bible.getBooks();
+        QStringList all_books = bible1.getBooks();
 
         if(ui->listBook->count() != all_books.count())
         {
@@ -843,7 +843,7 @@ BibleHistory SoftBibleStudy::getCurrentVerse()
             if(first_selected == -1)
                 first_selected = i;
             last_selected = i;
-            selected_ids += bible.previewIdList.at(i) + ",";
+            selected_ids += bible1.previewIdList.at(i) + ",";
         }
     }
     selected_ids.chop(1);
@@ -894,16 +894,19 @@ void SoftBibleStudy::setBibleSearchActive()
 
 void SoftBibleStudy::on_comboBoxBibleOne_activated(int index)
 {
-    mySettings.bibleVersions.bibleOne = bibleList.at(index).bibleId;
+    mySettings.bibleVersions.bibleOne = biblesInDatabase.at(index).bibleId;
+    bible1.loadBible(mySettings.bibleVersions.bibleOne);
     loadBibles();
 }
 
 void SoftBibleStudy::on_comboBoxBibleTwo_activated(int index)
 {
-     mySettings.bibleVersions.bibleTwo = bibleList.at(index).bibleId;
+     mySettings.bibleVersions.bibleTwo = biblesInDatabase.at(index).bibleId;
+     bible2.loadBible(mySettings.bibleVersions.bibleTwo);
 }
 
 void SoftBibleStudy::on_comboBoxBibleThree_activated(int index)
 {
-     mySettings.bibleVersions.bibleThree = bibleList.at(index).bibleId;
+     mySettings.bibleVersions.bibleThree = biblesInDatabase.at(index).bibleId;
+     bible3.loadBible(mySettings.bibleVersions.bibleThree);
 }

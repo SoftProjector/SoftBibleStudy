@@ -53,7 +53,7 @@ public:
     SoftBibleStudy *softProjector;
 
 
-    Bible bible;
+    Bible bible1, bible2, bible3;
     QString getCurrentBook();
 
     // For optimization:
@@ -110,7 +110,7 @@ private:
 
 
     BibleVersionSettings bibleSettings;
-    QList<Bibles> bibleList;
+    QList<Bibles> biblesInDatabase;
     HighlighterDelegate *highlight;
     QList<BibleSearch> search_results;
     QList<BibleHistory> history_items;

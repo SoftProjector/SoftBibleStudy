@@ -76,7 +76,7 @@ void PrintPreviewDialog::setText(QString bible, QString book, int chapter)
 
     Bible b;
     b.setBiblesId(bible);
-    b.loadOperatorBible();
+    b.loadBible();
 
     // get bible name instead of id
     bible = b.getBibleName();
