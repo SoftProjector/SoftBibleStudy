@@ -22,6 +22,7 @@
 
 #include <QMainWindow>
 #include "bible.hpp"
+#include "biblemodel.hpp"
 #include "managedatadialog.hpp"
 #include "settingsdialog.hpp"
 #include "settings.hpp"
@@ -46,14 +47,13 @@ public:
     QDesktopWidget *desktop;
 
     bool showing; // whether we are currently showing to the projector
-    Verse current_verse;
     QString version_string;
     Settings mySettings;
 
-    SoftBibleStudy *softProjector;
+    BibleModel *bibleViewModel;
 
 
-    Bible bible1, bible2, bible3;
+    Bible bible;
     QString getCurrentBook();
 
     // For optimization:
@@ -147,8 +147,6 @@ private slots:
     void on_search_button_clicked();
     void on_chapter_ef_textChanged(QString new_string);
     void on_lineEditBook_textChanged(QString );
-    void on_chapter_preview_list_doubleClicked(QModelIndex index);
-    void on_chapter_preview_list_currentRowChanged(int currentRow);
     void on_listChapterNum_currentTextChanged(QString currentText);
     void on_listBook_currentTextChanged(QString currentText);
 

@@ -23,29 +23,38 @@ Bible::Bible()
 {
 }
 
-void Bible::setBiblesId(QString& id)
+void Bible::setBiblesId(const QString &idA, const QString &idB, const QString &idC)
 {
-    bibleId = id;
+    bibleIdA = idA;
+    bibleIdB = idB;
+    bibleIdC = idC;
     retrieveBooks();
 }
 
 QString Bible::getBibleName()
 {
-    if(bibleId.isEmpty())
+    return getBibleName(bibleIdA);
+}
+
+QString Bible::getBibleName(QString const &id)
+{
+    if(id.isEmpty()){
         return "";
+    }
     QSqlQuery sq;
-    sq.exec("SELECT bible_name FROM BibleVersions WHERE id = "+ bibleId );
+    sq.exec("SELECT bible_name FROM BibleVersions WHERE id = "+ id );
     sq.first();
     QString b = sq.value(0).toString().trimmed();
     return b;
 }
+
 
 void Bible::retrieveBooks()
 {
     BibleBook book;
     QSqlQuery sq;
     books.clear();
-    sq.exec("SELECT book_name, id, chapter_count FROM BibleBooks WHERE bible_id = "+ bibleId );
+    sq.exec("SELECT book_name, id, chapter_count FROM BibleBooks WHERE bible_id = "+ bibleIdA );
     while (sq.next())
     {
         book.book = sq.value(0).toString().trimmed();
@@ -57,13 +66,16 @@ void Bible::retrieveBooks()
 
 QStringList Bible::getBooks()
 {
-    QStringList book_list;
-    if( books.count() == 0 )
+    QStringList bookList;
+    if( books.count() == 0 ){
         retrieveBooks();
-    for(int i(0); books.count()>i;++i)
-        book_list.append(books.at(i).book);
+    }
 
-    return book_list;
+    foreach(const BibleBook &b, books){
+        bookList.append(b.book);
+    }
+
+    return bookList;
 }
 
 QString Bible::getBookName(int id)
@@ -87,13 +99,13 @@ void Bible::getVerseRef(QString vId, QString &book, int &chapter, int &verse)
         vId = vId.split(",").first();
     }
 
-    foreach(const BibleVerse &bv, bibleVerseList)
+    foreach(const BibleVerse &bv, bibleVerseListA)
     {
-        if(bv.verseId == vId)
+        if(bv.id == vId)
         {
             book = QString::number(bv.book);
             chapter = bv.chapter;
-            verse = bv.verseNumber;
+            verse = bv.number;
             break;
         }
     }
@@ -116,11 +128,11 @@ int Bible::getVerseNumberLast(QString vId)
         vId = vId.split(",").last();
     }
 
-    foreach(const BibleVerse &bv, bibleVerseList)
+    foreach(const BibleVerse &bv, bibleVerseListA)
     {
-        if(bv.verseId == vId)
+        if(bv.id == vId)
         {
-            vernum = bv.verseNumber;
+            vernum = bv.number;
             break;
         }
     }
@@ -141,35 +153,71 @@ int Bible::getCurrentBookRow(QString book)
     return chapters;
 }
 
-QStringList Bible::getChapter(int book, int chapter)
+BibleVerse Bible::getCorrespondingVerse(const QString &verseId, QList<BibleVerse> &bvl)
 {
-    QString verseText, id;
-    int verse(0), verse_old(0);
+    foreach (const BibleVerse &bv, bvl)
+    {
+        if(bv.id == verseId){
+            return bv;
+        }
+    }
+
+    return BibleVerse();
+}
+
+const QList<ChapterVerse> Bible::getChapter(QString bookName, int chapter)
+{
+    QList<ChapterVerse> verseList;
+    QString id;
+    ChapterVerse verseText;
+    int verse(0), verse_old(0), verseOldB(0), verseOldC(0);
     bool chapterStarted = false;
+    int book = books.at(getCurrentBookRow(bookName)).bookId.toInt();
 
     previewIdList.clear();
-    QStringList verseList;
-    foreach (const BibleVerse &bv, bibleVerseList)
+    foreach (const BibleVerse &bvA, bibleVerseListA)
     {
-        if(bv.book == book && bv.chapter == chapter)
+        BibleVerse bvB, bvC;
+        if(bvA.book == book && bvA.chapter == chapter)
         {
             chapterStarted = true;
-            verse  = bv.verseNumber;
+            bvB = getCorrespondingVerse(bvA.id, bibleVerseListB);
+            bvC = getCorrespondingVerse(bvA.id, bibleVerseListC);
+            verse  = bvA.number;
             if(verse==verse_old)
             {
-                verseText = verseText.simplified() + " " + bv.verseText;
-                id += "," + bv.verseId;
+                verseText.verseTextA = verseText.verseTextA.simplified() + " " + bvA.text.simplified();
+
+                if (bvB.number == verseOldB){
+                    verseText.verseTextB = verseText.verseTextB.simplified() + " " + bvB.text.simplified();
+                } else {
+                    verseText.verseTextB = QString("%1 (%2) %3").arg(verseText.verseTextB.simplified())
+                            .arg(bvB.number).arg(bvB.text.simplified());
+                }
+
+                if (bvC.number == verseOldC){
+                    verseText.verseTextC = verseText.verseTextC.simplified() + " " + bvC.text.simplified();
+                } else {
+                    verseText.verseTextC = QString("%1 (%2) %3").arg(verseText.verseTextC.simplified())
+                            .arg(bvC.number).arg(bvC.text.simplified());
+                }
+
+                id += "," + bvA.id;
                 verseList.removeLast();
                 previewIdList.removeLast();
             }
             else
             {
-                verseText = bv.verseText;
-                id = bv.verseId;
+                verseText.verseTextA = QString("(%1) %2").arg(bvA.number).arg(bvA.text);
+                verseText.verseTextB = QString("(%1) %2").arg(bvB.number).arg(bvB.text);
+                verseText.verseTextC = QString("(%1) %2").arg(bvC.number).arg(bvC.text);
+                id = bvA.id;
             }
-            verseList << QString::number(verse) + ". " + verseText;
+            verseList.append(verseText);
             previewIdList << id;
             verse_old = verse;
+            verseOldB = bvB.number;
+            verseOldC = bvC.number;
 
             continue;
         }
@@ -293,9 +341,9 @@ QList<BibleSearch> Bible::searchBible(bool allWords, QRegExp searchExp)
     sw.remove("\\b(");
     sw.remove(")\\b");
 
-    foreach(const BibleVerse &bv,bibleVerseList)
+    foreach(const BibleVerse &bv,bibleVerseListA)
     {
-        if(bv.verseText.contains(searchExp))
+        if(bv.text.contains(searchExp))
         {
             if(allWords)
             {
@@ -303,7 +351,7 @@ QList<BibleSearch> Bible::searchBible(bool allWords, QRegExp searchExp)
                 bool hasAll = false;
                 for (int j(0);j<stl.count();++j)
                 {
-                    hasAll = bv.verseText.contains(QRegExp("\\b"+stl.at(j)+"\\b",Qt::CaseInsensitive));
+                    hasAll = bv.text.contains(QRegExp("\\b"+stl.at(j)+"\\b",Qt::CaseInsensitive));
                     if(!hasAll)
                         break;
                 }
@@ -328,9 +376,9 @@ QList<BibleSearch> Bible::searchBible(bool allWords, QRegExp searchExp, int book
     sw.remove("\\b(");
     sw.remove(")\\b");
 
-    foreach(const BibleVerse &bv,bibleVerseList)
+    foreach(const BibleVerse &bv,bibleVerseListA)
     {
-        if(bv.verseText.contains(searchExp) && bv.book == book)
+        if(bv.text.contains(searchExp) && bv.book == book)
         {
             if(allWords)
             {
@@ -338,7 +386,7 @@ QList<BibleSearch> Bible::searchBible(bool allWords, QRegExp searchExp, int book
                 bool hasAll = false;
                 for (int j(0);j<stl.count();++j)
                 {
-                    hasAll = bv.verseText.contains(QRegExp("\\b"+stl.at(j)+"\\b",Qt::CaseInsensitive));
+                    hasAll = bv.text.contains(QRegExp("\\b"+stl.at(j)+"\\b",Qt::CaseInsensitive));
                     if(!hasAll)
                         break;
                 }
@@ -362,9 +410,9 @@ QList<BibleSearch> Bible::searchBible(bool allWords, QRegExp searchExp, int book
     sw.remove("\\b(");
     sw.remove(")\\b");
 
-    foreach(const BibleVerse &bv,bibleVerseList)
+    foreach(const BibleVerse &bv,bibleVerseListA)
     {
-        if(bv.verseText.contains(searchExp) && bv.book == book && bv.chapter == chapter)
+        if(bv.text.contains(searchExp) && bv.book == book && bv.chapter == chapter)
         {
             if(allWords)
             {
@@ -372,7 +420,7 @@ QList<BibleSearch> Bible::searchBible(bool allWords, QRegExp searchExp, int book
                 bool hasAll = false;
                 for (int j(0);j<stl.count();++j)
                 {
-                    hasAll = bv.verseText.contains(QRegExp("\\b"+stl.at(j)+"\\b",Qt::CaseInsensitive));
+                    hasAll = bv.text.contains(QRegExp("\\b"+stl.at(j)+"\\b",Qt::CaseInsensitive));
                     if(!hasAll)
                         break;
                 }
@@ -399,31 +447,46 @@ void Bible::addSearchResult(const BibleVerse &bv, QList<BibleSearch> &bsl)
         }
     }
     results.chapter = QString::number(bv.chapter);
-    results.verse = QString::number(bv.verseNumber);
-    results.verse_text = QString("%1 %2:%3 %4").arg(results.book).arg(results.chapter).arg(results.verse).arg(bv.verseText);
+    results.verse = QString::number(bv.number);
+    results.verse_text = QString("%1 %2:%3 %4").arg(results.book).arg(results.chapter).arg(results.verse).arg(bv.text);
 
     bsl.append(results);
 }
 
-void Bible::loadBible()
+QList<BibleVerse> Bible::loadBibleVersion(QString bibleId, QList<BibleVerse> &bl)
 {
-    bibleVerseList.clear();
+    bl.clear();
     BibleVerse bv;
     QSqlQuery sq;
     sq.exec("SELECT verse_id, book, chapter, verse, verse_text FROM BibleVerse WHERE bible_id = '"+bibleId+"'");
     while(sq.next())
     {
-        bv.verseId = sq.value(0).toString().trimmed();
+        bv.id = sq.value(0).toString().trimmed();
         bv.book = sq.value(1).toInt();
         bv.chapter = sq.value(2).toInt();
-        bv.verseNumber = sq.value(3).toInt();
-        bv.verseText = sq.value(4).toString().trimmed();
-        bibleVerseList.append(bv);
+        bv.number = sq.value(3).toInt();
+        bv.text = sq.value(4).toString().trimmed();
+
+        bl.append(bv);
+
     }
+    return bl;
 }
 
-void Bible::loadBible(QString &id)
+void Bible::loadBible()
 {
-    setBiblesId(id);
+
+    qDebug()<<"Loading Bible Version id:"<<bibleIdA;
+    loadBibleVersion(bibleIdA, bibleVerseListA);
+    qDebug()<<"Loading Bible Version id:"<<bibleIdB;
+    loadBibleVersion(bibleIdB, bibleVerseListB);
+    qDebug()<<"Loading Bible Version id:"<<bibleIdC;
+    loadBibleVersion(bibleIdC, bibleVerseListC);
+    qDebug()<<"*** Completed loading bibles ****";
+}
+
+void Bible::loadBible(QString const &idA, QString const &idB, QString const &idC)
+{
+    setBiblesId(idA, idB, idC);
     loadBible();
 }

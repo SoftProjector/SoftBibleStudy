@@ -26,25 +26,20 @@
 class BibleVerse
 {
 public:
-    // Hold Bible Verse Info
-    QString verseId;
+    // Hold Bible Verse Info and Text
+    QString id;
     int book;
     int chapter;
-    int verseNumber;
-    QString verseText;
+    int number;
+    QString text;
 };
 
-class Verse
+class ChapterVerse
 {
 public:
-    // For now both primary and secondary information is stored in
-    // primary_text and primary_caption
-    QString primary_text;
-    QString secondary_text;
-    QString primary_caption;
-    QString secondary_caption;
-    QString trinary_text;
-    QString trinary_caption;
+    QString verseTextA;
+    QString verseTextB;
+    QString verseTextC;
 };
 
 class BibleSearch
@@ -93,16 +88,19 @@ public slots:
     QString getBookName(int id);
     void getVerseRef(QString vId, QString &book, int &chapter, int &verse);
     int getVerseNumberLast(QString vId);
-    QStringList getChapter(int book, int chapter);
+    BibleVerse getCorrespondingVerse(const QString &verseId, QList<BibleVerse> &bvl);
+    const QList<ChapterVerse> getChapter(QString bookName, int chapter);
     void getVerseAndCaption(QString &verse, QString &caption, QString verId, QString &bibId, bool useAbbr);
     int getCurrentBookRow(QString book);
-    void setBiblesId(QString &id);
+    void setBiblesId(QString const &idA, QString const &idB, QString const &idC);
     QString getBibleName();
+    QString getBibleName(QString const &id);
+    QList<BibleVerse> loadBibleVersion(QString bibleId, QList<BibleVerse> &bl);
     void loadBible();
-    void loadBible(QString &id);
+    void loadBible(const QString &idA, const QString &idB, const QString &idC);
 private:
-    QString bibleId;
-    QList<BibleVerse> bibleVerseList;
+    QString bibleIdA, bibleIdB, bibleIdC;
+    QList<BibleVerse> bibleVerseListA, bibleVerseListB, bibleVerseListC;
     void retrieveBooks();
 private slots:
     void addSearchResult(const BibleVerse &bv,QList<BibleSearch> &bsl);

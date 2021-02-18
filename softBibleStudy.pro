@@ -44,6 +44,7 @@ RCC_DIR = $${RES_DIR}/rcc
 OUT_PWD = $${RES_DIR}/bin
 
 SOURCES += main.cpp \
+    biblemodel.cpp \
     softbiblestudy.cpp \
     bible.cpp \
     settingsdialog.cpp \
@@ -60,6 +61,7 @@ SOURCES += main.cpp \
     displaysetting.cpp \
     printpreviewdialog.cpp
 HEADERS += \
+    biblemodel.hpp \
     softbiblestudy.hpp \
     bible.hpp \
     settingsdialog.hpp \

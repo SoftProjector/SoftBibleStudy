@@ -74,6 +74,7 @@ void PrintPreviewDialog::setText(QString bible, QString book, int chapter)
     else
         bible = bb.at(0); // operator bible
 
+    /* FIXME
     Bible b;
     b.setBiblesId(bible);
     b.loadBible();
@@ -94,7 +95,7 @@ void PrintPreviewDialog::setText(QString bible, QString book, int chapter)
 
     s = QString("%1\n%2 %3\n\n").arg(bible).arg(book).arg(chapter);
     s += clist.join("\n");
-
+    */
     ui->textEdit->setText(s);
     ui->spinBoxFontSize->setValue(11);// default font size for Bible chapter
 }
